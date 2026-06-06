@@ -1,0 +1,16 @@
+{
+  "name": "html-artifact",
+  "metadata": {
+    "description": "Agent skill for generating reviewable single-file HTML artifacts — RFCs, design docs, code reviews, postmortems, ADRs, specs"
+  },
+  "owner": {
+    "name": "Aasim Sani"
+  },
+  "plugins": [
+    {
+      "name": "html-artifact",
+      "source": "./plugins/html-artifact",
+      "description": "Editorial style guide for one-off, single-file reviewable HTML artifacts (RFCs, design docs, code reviews, postmortems, ADRs, plans) — NOT for production web apps or customer-facing UIs. Single self-contained file with section-reviewed checkboxes, per-section comments, decision queue, text-range annotations, baseline export formats, and a JSON companion file on disk for live agent monitoring"
+    }
+  ]
+}

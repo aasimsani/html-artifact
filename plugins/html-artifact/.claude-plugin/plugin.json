@@ -1,0 +1,5 @@
+{
+  "name": "html-artifact",
+  "description": "Editorial style guide for one-off, single-file reviewable HTML *artifacts* (RFCs, design docs, code reviews, postmortems, ADRs, plans). Single self-contained file with section-reviewed checkboxes, per-section comments, decision queue, text-range annotations, multi-element selection, right-click annotate, baseline export formats, and a JSON companion file on disk for live agent monitoring. NOT for production web apps or customer-facing UIs.",
+  "version": "0.3.0"
+}

@@ -1,0 +1,428 @@
+<!--
+  =============================================================================
+  Text-range annotations (highlights) — the REQUIRED §4 primitive.
+  Depends on: persistence.js (KEY_COMMENTS, saveJSON, window.__commentStore).
+  Re-renders are idempotent via a per-element pristine-innerHTML snapshot.
+  =============================================================================
+-->
+
+<!-- ===== CSS ===== -->
+<style>
+mark.annot {
+  background-color: var(--sev-q-bg); border-bottom: 2px solid var(--sev-q);
+  color: inherit; padding: 0 1px; cursor: pointer; border-radius: 1px;
+  transition: filter 80ms ease;
+}
+mark.annot:hover { filter: brightness(0.95); }
+mark.annot[data-sev="gap"]   { background-color: var(--sev-crit-bg); border-bottom-color: var(--sev-crit); }
+mark.annot[data-sev="risk"]  { background-color: var(--sev-high-bg); border-bottom-color: var(--sev-high); }
+mark.annot[data-sev="q"]     { background-color: var(--sev-q-bg);    border-bottom-color: var(--sev-q); }
+mark.annot[data-sev="dec"]   { background-color: var(--sev-low-bg);  border-bottom-color: var(--sev-low); }
+mark.annot[data-sev="nit"]   { background-color: var(--bg-sunken);   border-bottom-color: var(--ink-3); }
+mark.annot.addressed { opacity: 0.5; }
+mark.annot.flash     { filter: brightness(0.78); }      /* jump-to flash, ~900ms */
+
+.annot-helper {
+  position: absolute; z-index: 199; display: none;
+  background: var(--ink); color: var(--bg);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  padding: 6px 12px; border-radius: 4px; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+}
+.annot-helper.open  { display: block; }
+.annot-helper:hover { background: var(--accent); }
+
+.annot-popover {
+  position: absolute; z-index: 200; display: none;
+  background: var(--bg-elev); border: 1px solid var(--rule-strong);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+  padding: 16px; width: 380px; max-width: 92vw;
+}
+.annot-popover.open { display: block; }
+.annot-popover .ap-meta { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 8px; letter-spacing: 0.06em; }
+.annot-popover .ap-quote {
+  font-family: var(--serif); font-style: italic;
+  background: var(--bg-sunken); border-left: 2px solid var(--rule-strong);
+  padding: 6px 10px; margin: 0 0 10px; font-size: 13px; color: var(--ink-2);
+  max-height: 110px; overflow: auto;
+}
+.annot-popover .ap-sev-picker { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.annot-popover .ap-sev-picker button {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid var(--rule-strong); background: transparent; color: var(--ink-3); cursor: pointer; border-radius: 3px;
+}
+.annot-popover .ap-sev-picker button.selected { color: var(--ink); border-color: var(--ink); background: var(--bg-sunken); }
+.annot-popover textarea {
+  width: 100%; font-family: var(--mono); font-size: 12.5px;
+  background: var(--bg); border: 1px solid var(--rule-strong); padding: 8px 10px; min-height: 80px; margin-bottom: 10px; resize: vertical;
+}
+.annot-popover .ap-actions { display: flex; gap: 8px; }
+.annot-popover .ap-actions button { font-family: var(--mono); font-size: 11px; padding: 6px 14px; border: 1px solid var(--ink); cursor: pointer; }
+.annot-popover .ap-actions button#apSave   { background: var(--ink); color: var(--bg); }
+.annot-popover .ap-actions button.secondary { background: transparent; color: var(--ink); }
+.annot-popover .ap-actions button.danger    { background: transparent; color: var(--sev-crit); border-color: var(--sev-crit); margin-left: auto; }
+</style>
+
+<!-- ===== DOM (render once near end of <body>) ===== -->
+<div class="annot-helper" id="annotHelper" role="button" tabindex="0" aria-label="Annotate selection">
+  ＋ Annotate
+</div>
+<div class="annot-popover" id="annotPopover" role="dialog" aria-label="Annotation editor">
+  <div class="ap-meta" id="apMeta">New annotation</div>
+  <div class="ap-quote" id="apQuote"></div>
+  <div class="ap-sev-picker" id="apSevPicker"></div>
+  <textarea id="apBody" placeholder="Comment (Markdown OK)"></textarea>
+  <div class="ap-actions">
+    <button id="apSave"   type="button">Save</button>
+    <button id="apCancel" type="button" class="secondary">Cancel</button>
+    <button id="apQueue"  type="button" class="secondary" style="display:none;">Queue</button>
+    <button id="apDelete" type="button" class="danger"    style="display:none;">Delete</button>
+  </div>
+</div>
+
+<!-- ===== JS ===== -->
+<script>
+// SEVERITIES is supplied by the workflow command.
+// Default 5-entry list matches `mark.annot[data-sev=...]` attribute selectors above.
+const SEVERITIES = window.SEVERITIES || [
+  { id: "gap",  label: "Gap"      },
+  { id: "risk", label: "Risk"     },
+  { id: "q",    label: "Question" },
+  { id: "dec",  label: "Decision" },
+  { id: "nit",  label: "Nit"      },
+];
+
+const ANNOT_SELECTOR =
+  "main p, main li, main td, main h2, main h3, main h4, " +
+  "main blockquote, main .dod-body, main .callout, main .quote, main pre.code";
+
+const pristine = {};      // aid -> innerHTML snapshot before any marks
+let annotCounter = 0;
+let lastRenderedAids = new Set();
+
+function setupAnnotatables() {
+  const mainEl = document.querySelector("main");
+  Array.from(mainEl.querySelectorAll(ANNOT_SELECTOR)).forEach(el => {
+    if (el.hasAttribute("data-aid")) return;
+    if (el.closest(".comment, .comment-form, .annot-popover, .sidenav, .review-drawer")) return;
+    // Leaf-first: skip if it has an annotatable descendant
+    const desc = el.querySelector(ANNOT_SELECTOR);
+    if (desc && !desc.closest(".comment, .comment-form, .annot-popover")) return;
+    const aid = "a" + (++annotCounter);
+    el.setAttribute("data-aid", aid);
+    pristine[aid] = el.innerHTML;
+  });
+}
+
+function getRangeOffsets(range, container) {
+  const pre = document.createRange();
+  pre.selectNodeContents(container);
+  try { pre.setEnd(range.startContainer, range.startOffset); } catch (e) { return { start: -1, end: -1 }; }
+  const start = pre.toString().length;
+  const pre2 = document.createRange();
+  pre2.selectNodeContents(container);
+  try { pre2.setEnd(range.endContainer, range.endOffset); } catch (e) { return { start: -1, end: -1 }; }
+  const end = pre2.toString().length;
+  return { start, end };
+}
+
+// Clip a range to a single [data-aid] element's textContent.
+// Returns {start, end} offsets within el, or null if no overlap.
+// Handles selections that extend beyond el on either side by clipping to the
+// element's bounds — this is what makes multi-element selection work.
+function clipRangeToElement(range, el) {
+  if (!range.intersectsNode(el)) return null;
+  const elRange = document.createRange();
+  elRange.selectNodeContents(el);
+  let startInEl;
+  if (range.compareBoundaryPoints(Range.START_TO_START, elRange) < 0) {
+    startInEl = 0;
+  } else {
+    const pre = document.createRange(); pre.selectNodeContents(el);
+    try { pre.setEnd(range.startContainer, range.startOffset); } catch (e) { return null; }
+    startInEl = pre.toString().length;
+  }
+  let endInEl;
+  if (range.compareBoundaryPoints(Range.END_TO_END, elRange) > 0) {
+    endInEl = el.textContent.length;
+  } else {
+    const pre = document.createRange(); pre.selectNodeContents(el);
+    try { pre.setEnd(range.endContainer, range.endOffset); } catch (e) { return null; }
+    endInEl = pre.toString().length;
+  }
+  if (endInEl <= startInEl) return null;
+  return { start: startInEl, end: endInEl };
+}
+
+// Walk every [data-aid] element the range touches and collect per-element anchors.
+// Returns [] for selections that don't intersect any annotatable.
+function collectAnchorsForRange(range) {
+  const out = [];
+  document.querySelectorAll("main [data-aid]").forEach(el => {
+    const clip = clipRangeToElement(range, el);
+    if (clip) out.push({ aid: el.getAttribute("data-aid"), start: clip.start, end: clip.end });
+  });
+  return out;
+}
+
+function wrapTextRange(el, start, end, sev, annotId, addressed) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+  const nodes = []; let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  let acc = 0;
+  nodes.forEach(node => {
+    const ns = acc, ne = acc + node.nodeValue.length; acc = ne;
+    if (ne <= start || ns >= end) return;
+    if (node.parentNode.closest && node.parentNode.closest("mark.annot[data-annot-id='" + annotId + "']")) return;
+    const ls = Math.max(0, start - ns);
+    const le = Math.min(node.nodeValue.length, end - ns);
+    const before = node.nodeValue.slice(0, ls);
+    const middle = node.nodeValue.slice(ls, le);
+    const after  = node.nodeValue.slice(le);
+    if (!middle) return;
+    const mark = document.createElement("mark");
+    mark.className = "annot" + (addressed ? " addressed" : "");
+    mark.setAttribute("data-sev", sev);
+    mark.setAttribute("data-annot-id", annotId);
+    mark.textContent = middle;
+    const parent = node.parentNode;
+    if (before) parent.insertBefore(document.createTextNode(before), node);
+    parent.insertBefore(mark, node);
+    if (after)  parent.insertBefore(document.createTextNode(after), node);
+    parent.removeChild(node);
+  });
+}
+
+function renderAnnotations() {
+  // marksByAid[aid] = [{ start, end, sev, id, addressed }]
+  // Single-aid anchor → one entry. Multi-aid anchor → one entry per aid the
+  // selection touched, all sharing the same comment id so jump/edit/delete
+  // operate on the whole annotation.
+  const marksByAid = {};
+  Object.values(window.__commentStore).forEach(c => {
+    if (!c.anchor) return;
+    const push = (aid, s, e) =>
+      (marksByAid[aid] = marksByAid[aid] || []).push({ start: s, end: e, sev: c.sev, id: c.id, addressed: c.addressed });
+    if (c.anchor.aid) push(c.anchor.aid, c.anchor.start, c.anchor.end);
+    else if (Array.isArray(c.anchor.aids)) c.anchor.aids.forEach(a => push(a.aid, a.start, a.end));
+  });
+  // Restore every element that had marks last render OR needs them this render.
+  // The pristine snapshot is what makes overlapping/deleted/edited marks safe.
+  const allAids = new Set([...lastRenderedAids, ...Object.keys(marksByAid)]);
+  allAids.forEach(aid => {
+    const el = document.querySelector('[data-aid="' + aid + '"]');
+    if (!el || !(aid in pristine)) return;
+    el.innerHTML = pristine[aid];
+  });
+  // Re-apply marks sorted ascending so overlap doesn't corrupt.
+  Object.keys(marksByAid).forEach(aid => {
+    const el = document.querySelector('[data-aid="' + aid + '"]');
+    if (!el) return;
+    const marks = marksByAid[aid].slice().sort((a, b) => a.start - b.start || b.end - a.end);
+    marks.forEach(m => wrapTextRange(el, m.start, m.end, m.sev, m.id, !!m.addressed));
+  });
+  lastRenderedAids = new Set(Object.keys(marksByAid));
+}
+
+// ---- popover wiring ---------------------------------------------------------
+const annotHelper  = document.getElementById("annotHelper");
+const annotPopover = document.getElementById("annotPopover");
+const apMeta   = document.getElementById("apMeta");
+const apQuote  = document.getElementById("apQuote");
+const apBody   = document.getElementById("apBody");
+const apPicker = document.getElementById("apSevPicker");
+let apState = { mode: "new", chosenSev: "q", pending: null, editingId: null };
+
+function buildSevPicker(selectedId) {
+  apPicker.innerHTML = "";
+  SEVERITIES.forEach(s => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = s.label;
+    if (s.id === selectedId) b.classList.add("selected");
+    b.addEventListener("click", () => {
+      apState.chosenSev = s.id;
+      apPicker.querySelectorAll("button").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+    });
+    apPicker.appendChild(b);
+  });
+}
+
+function positionPopover(rect) {
+  const popW = 380, popH = annotPopover.offsetHeight || 240;
+  let left = (rect.left || 0) + window.scrollX;
+  let top  = (rect.bottom || 0) + window.scrollY + 8;
+  if (left + popW > window.innerWidth + window.scrollX - 12)
+    left = window.innerWidth + window.scrollX - popW - 12;
+  if (left < window.scrollX + 12) left = window.scrollX + 12;
+  if (rect.bottom + popH + 16 > window.innerHeight)
+    top = (rect.top || 0) + window.scrollY - popH - 8;
+  annotPopover.style.left = left + "px";
+  annotPopover.style.top  = top + "px";
+}
+
+function openNewPopover(pending) {
+  apState = { mode: "new", chosenSev: "q", pending, editingId: null };
+  apMeta.textContent  = "New annotation · " + (pending.text.length) + " chars selected";
+  apQuote.textContent = pending.text;
+  apBody.value = "";
+  buildSevPicker(apState.chosenSev);
+  document.getElementById("apQueue").style.display  = "none";
+  document.getElementById("apDelete").style.display = "none";
+  annotHelper.classList.remove("open");
+  positionPopover(pending.rect);
+  annotPopover.classList.add("open");
+  apBody.focus();
+}
+
+function openEditPopover(commentId, markEl) {
+  const c = window.__commentStore[commentId];
+  if (!c) return;
+  apState = { mode: "edit", chosenSev: c.sev, pending: null, editingId: commentId };
+  apMeta.textContent  = "Edit annotation";
+  apQuote.textContent = c.anchor ? c.anchor.text : "";
+  apBody.value = c.body || "";
+  buildSevPicker(apState.chosenSev);
+  const queueBtn = document.getElementById("apQueue");
+  queueBtn.style.display = "inline-block";
+  queueBtn.textContent = c.queued ? "Unqueue" : "Queue";
+  document.getElementById("apDelete").style.display = "inline-block";
+  const rect = markEl.getBoundingClientRect();
+  positionPopover(rect);
+  annotPopover.classList.add("open");
+  apBody.focus();
+}
+
+function closePopover() {
+  annotPopover.classList.remove("open");
+  apState.pending = null; apState.editingId = null;
+}
+
+// Save handler — creates new annotation entry or updates existing.
+document.getElementById("apSave").addEventListener("click", () => {
+  const body = apBody.value.trim();
+  if (apState.mode === "new") {
+    const p = apState.pending; if (!p) return;
+    const id = newCommentId();
+    // Single-aid selection → legacy {aid,start,end,text}. Multi-aid → {aids:[...],text}.
+    const anchor = p.aids.length === 1
+      ? { aid: p.aids[0].aid, start: p.aids[0].start, end: p.aids[0].end, text: p.text }
+      : { aids: p.aids.map(a => ({ aid: a.aid, start: a.start, end: a.end })), text: p.text };
+    window.__commentStore[id] = {
+      id, sectionId: nearestSectionId(p), sev: apState.chosenSev,
+      title: "", body, queued: true, addressed: false, ts: Date.now(),
+      anchor
+    };
+    queue[id] = { queued: true, ts: Date.now() };
+  } else if (apState.editingId) {
+    const c = window.__commentStore[apState.editingId];
+    if (!c) return;
+    c.sev = apState.chosenSev; c.body = body;
+  }
+  saveJSON(KEY_COMMENTS, window.__commentStore);
+  saveJSON(KEY_QUEUE, queue);
+  closePopover(); renderAnnotations();
+  if (typeof renderComments === "function") renderComments();
+  if (typeof updateTray === "function") updateTray();
+});
+document.getElementById("apCancel").addEventListener("click", closePopover);
+document.getElementById("apDelete").addEventListener("click", () => {
+  if (!apState.editingId) return;
+  delete window.__commentStore[apState.editingId];
+  delete queue[apState.editingId];
+  saveJSON(KEY_COMMENTS, window.__commentStore);
+  saveJSON(KEY_QUEUE, queue);
+  closePopover(); renderAnnotations();
+  if (typeof renderComments === "function") renderComments();
+  if (typeof updateTray === "function") updateTray();
+});
+document.getElementById("apQueue").addEventListener("click", () => {
+  if (!apState.editingId) return;
+  const c = window.__commentStore[apState.editingId];
+  c.queued = !c.queued;
+  if (c.queued) queue[c.id] = { queued: true, ts: Date.now() }; else delete queue[c.id];
+  saveJSON(KEY_COMMENTS, window.__commentStore);
+  saveJSON(KEY_QUEUE, queue);
+  document.getElementById("apQueue").textContent = c.queued ? "Unqueue" : "Queue";
+  if (typeof updateTray === "function") updateTray();
+});
+
+function nearestSectionId(pending) {
+  const aid = pending && (pending.aid || (pending.aids && pending.aids[0] && pending.aids[0].aid));
+  if (!aid) return "_unknown";
+  const el = document.querySelector('[data-aid="' + aid + '"]');
+  const sec = el && el.closest("section[id]");
+  return sec ? sec.id : "_unknown";
+}
+
+const ANNOT_IGNORE =
+  ".comment-form, .review-drawer, .review-tray, .topbar, .sidenav, " +
+  "mark.annot, .comment, button, input, textarea, select, a, " +
+  ".annot-popover, .annot-helper";
+
+function pendingFromSelection() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return null;
+  const range = sel.getRangeAt(0);
+  const aids = collectAnchorsForRange(range);
+  if (!aids.length) return null;
+  return { aids, text: sel.toString(), rect: range.getBoundingClientRect() };
+}
+
+// Selection → show helper
+document.addEventListener("mouseup", e => {
+  if (annotPopover.contains(e.target) || annotHelper.contains(e.target)) return;
+  if (e.target.closest && e.target.closest(ANNOT_IGNORE)) return;
+  setTimeout(() => {
+    const p = pendingFromSelection();
+    if (!p) { annotHelper.classList.remove("open"); return; }
+    annotHelper.style.left = (p.rect.right + window.scrollX + 8) + "px";
+    annotHelper.style.top  = (p.rect.top   + window.scrollY - 4) + "px";
+    annotHelper.classList.add("open");
+    annotHelper._pending = p;
+  }, 10);
+});
+
+// Right-click → open popover directly at the cursor. Falls back to the native
+// menu when there's nothing useful to do (no selection, no mark, inside chrome).
+document.addEventListener("contextmenu", e => {
+  const mark = e.target.closest && e.target.closest("mark.annot");
+  if (mark) { e.preventDefault(); openEditPopover(mark.getAttribute("data-annot-id"), mark); return; }
+  if (e.target.closest && e.target.closest(
+    ".comment-form, .review-drawer, .review-tray, .topbar, .sidenav, .annot-popover, button, input, textarea, select"
+  )) return;
+  const p = pendingFromSelection();
+  if (!p) return;
+  e.preventDefault();
+  const cursorRect = { left: e.clientX, top: e.clientY, right: e.clientX, bottom: e.clientY + 18 };
+  openNewPopover(Object.assign({}, p, { rect: cursorRect }));
+});
+
+annotHelper.addEventListener("click", () => {
+  if (annotHelper._pending) openNewPopover(annotHelper._pending);
+});
+annotHelper.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && annotHelper._pending) openNewPopover(annotHelper._pending);
+});
+
+// Click existing mark → edit (capture so it fires before bubbling closes the popover)
+document.addEventListener("click", e => {
+  const mark = e.target.closest && e.target.closest("mark.annot");
+  if (!mark) return;
+  e.preventDefault(); e.stopPropagation();
+  openEditPopover(mark.getAttribute("data-annot-id"), mark);
+}, true);
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && annotPopover.classList.contains("open")) closePopover();
+});
+document.addEventListener("mousedown", e => {
+  if (annotPopover.classList.contains("open") &&
+      !annotPopover.contains(e.target) && !annotHelper.contains(e.target) &&
+      !(e.target.closest && e.target.closest("mark.annot"))) closePopover();
+});
+
+// Boot
+setupAnnotatables();
+renderAnnotations();
+</script>

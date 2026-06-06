@@ -1,0 +1,176 @@
+<!--
+  =============================================================================
+  Floating tray + slide-in drawer + clipboard copy with fallback + toast.
+  Depends on: persistence.js (queue, __commentStore), export-formats.js
+  (renderMarkdown, renderBullets, renderGhCli — or workflow-specific renderers).
+  Workflow command can extend the drawer's format dropdown with more entries.
+  =============================================================================
+-->
+
+<!-- ===== CSS ===== -->
+<style>
+.review-tray {
+  position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  font-family: var(--mono); font-size: 12.5px;
+}
+.review-tray button {
+  padding: 10px 16px; background: var(--ink); color: var(--bg);
+  border: 0; border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+}
+.review-tray button:hover { background: var(--accent); }
+.review-tray .count { background: var(--bg); color: var(--ink); padding: 1px 8px; border-radius: 999px; font-weight: 600; font-size: 11px; }
+.review-tray.empty button { background: var(--ink-3); }
+
+.review-backdrop {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(20,20,18,0.4);
+  opacity: 0; pointer-events: none; transition: opacity .22s ease;
+}
+.review-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.review-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(720px, 100%);
+  background: var(--bg); border-left: 1px solid var(--rule);
+  box-shadow: -20px 0 50px rgba(0,0,0,0.12);
+  z-index: 200; display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .22s ease;
+}
+.review-drawer.open { transform: translateX(0); }
+.review-drawer header { padding: 18px 24px 12px; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 14px; }
+.review-drawer header h3 { font-family: var(--serif); margin: 0; font-size: 22px; font-weight: 500; }
+.review-drawer header .sub { color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
+.review-drawer header .close-btn { margin-left: auto; background: none; border: 0; font-size: 22px; color: var(--ink-3); cursor: pointer; padding: 0 4px; }
+.drawer-controls { padding: 12px 24px; border-bottom: 1px solid var(--rule); display: flex; gap: 8px; align-items: center; background: var(--bg-sunken); font-family: var(--mono); font-size: 12px; }
+.drawer-controls label { color: var(--ink-3); }
+.drawer-controls select { font-family: var(--mono); font-size: 12px; padding: 5px 8px; border: 1px solid var(--rule-strong); background: var(--bg); }
+.drawer-controls .spacer { flex: 1; }
+.drawer-controls button { font-family: var(--mono); font-size: 11.5px; padding: 6px 14px; border: 1px solid var(--ink); cursor: pointer; }
+.drawer-controls button.primary { background: var(--ink); color: var(--bg); }
+.drawer-controls button.danger  { color: var(--sev-crit); border-color: var(--sev-crit); background: transparent; }
+.drawer-output { flex: 1; margin: 0; padding: 16px 24px; font-family: var(--mono); font-size: 12px; resize: none; white-space: pre; border: 0; width: 100%; overflow: auto; }
+.drawer-empty { padding: 32px 24px; color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
+
+.copied-toast {
+  position: fixed; bottom: 90px; right: 24px; z-index: 300;
+  padding: 10px 18px; background: var(--sev-good); color: #fff;
+  font-family: var(--mono); font-size: 12px; border-radius: 999px;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .2s, transform .2s; pointer-events: none;
+}
+.copied-toast.shown { opacity: 1; transform: translateY(0); }
+</style>
+
+<!-- ===== DOM ===== -->
+<div class="review-tray empty" id="reviewTray">
+  <button type="button" id="reviewTrayBtn">
+    <span id="reviewLabel">Review queue</span>
+    <span class="count" id="reviewCount">0</span>
+  </button>
+</div>
+<div class="review-backdrop" id="reviewBackdrop"></div>
+<aside class="review-drawer" id="reviewDrawer" aria-hidden="true">
+  <header>
+    <h3 id="drawerTitle">Review queue</h3>
+    <span class="sub" id="drawerSubtitle">0 queued</span>
+    <button class="close-btn" id="drawerClose" aria-label="Close drawer">×</button>
+  </header>
+  <div class="drawer-controls">
+    <label for="formatSelect">format</label>
+    <select id="formatSelect">
+      <option value="md">Markdown (GitHub / Notion)</option>
+      <option value="bullets">Bullet list (Slack)</option>
+      <option value="gh">gh CLI commands</option>
+    </select>
+    <span class="spacer"></span>
+    <button type="button" id="copyBtn" class="primary">Copy</button>
+    <button type="button" id="clearBtn" class="danger">Clear</button>
+  </div>
+  <textarea class="drawer-output" id="drawerOutput" readonly spellcheck="false"></textarea>
+  <div class="drawer-empty" id="drawerEmpty" hidden>No findings queued yet.</div>
+</aside>
+<div class="copied-toast" id="copiedToast">Copied to clipboard</div>
+
+<!-- ===== JS ===== -->
+<script>
+const tray       = document.getElementById("reviewTray");
+const trayBtn    = document.getElementById("reviewTrayBtn");
+const countEl    = document.getElementById("reviewCount");
+const drawer     = document.getElementById("reviewDrawer");
+const backdrop   = document.getElementById("reviewBackdrop");
+const closeBtn   = document.getElementById("drawerClose");
+const subtitle   = document.getElementById("drawerSubtitle");
+const formatSel  = document.getElementById("formatSelect");
+const output     = document.getElementById("drawerOutput");
+const emptyEl    = document.getElementById("drawerEmpty");
+const copyBtn    = document.getElementById("copyBtn");
+const clearBtn   = document.getElementById("clearBtn");
+const toast      = document.getElementById("copiedToast");
+
+function queuedComments() {
+  return Object.values(window.__commentStore).filter(c => c.queued);
+}
+function updateTray() {
+  const qs = queuedComments();
+  countEl.textContent = qs.length;
+  tray.classList.toggle("empty", qs.length === 0);
+  subtitle.textContent = qs.length + " queued";
+  if (drawer.classList.contains("open")) renderOutput();
+}
+function renderOutput() {
+  const qs = queuedComments();
+  if (!qs.length) { output.value = ""; output.hidden = true; emptyEl.hidden = false; return; }
+  output.hidden = false; emptyEl.hidden = true;
+  const fmt = formatSel.value;
+  if (fmt === "md")           output.value = renderMarkdown(qs);
+  else if (fmt === "bullets") output.value = renderBullets(qs);
+  else if (fmt === "gh")      output.value = renderGhCli(qs);
+  else if (typeof window.__renderFormat === "function") output.value = window.__renderFormat(fmt, qs);
+}
+function openDrawer() {
+  drawer.classList.add("open"); backdrop.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+  renderOutput();
+}
+function closeDrawer() {
+  drawer.classList.remove("open"); backdrop.classList.remove("open");
+  drawer.setAttribute("aria-hidden", "true");
+}
+
+trayBtn.addEventListener("click", openDrawer);
+closeBtn.addEventListener("click", closeDrawer);
+backdrop.addEventListener("click", closeDrawer);
+formatSel.addEventListener("change", renderOutput);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+});
+
+copyBtn.addEventListener("click", () => {
+  const txt = output.value; if (!txt) return;
+  const ok = () => {
+    toast.classList.add("shown");
+    setTimeout(() => toast.classList.remove("shown"), 1400);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(ok, () => {
+      output.select(); document.execCommand("copy"); ok();
+    });
+  } else {
+    output.select(); document.execCommand("copy"); ok();
+  }
+});
+
+clearBtn.addEventListener("click", () => {
+  if (!confirm("Clear all queued items? This unsets `queued` but keeps the comments themselves.")) return;
+  Object.values(window.__commentStore).forEach(c => c.queued = false);
+  Object.keys(queue).forEach(k => delete queue[k]);
+  saveJSON(KEY_COMMENTS, window.__commentStore);
+  saveJSON(KEY_QUEUE, queue);
+  if (typeof renderComments === "function") renderComments();
+  updateTray();
+});
+
+updateTray();
+</script>

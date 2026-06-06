@@ -1,0 +1,241 @@
+<!--
+  =============================================================================
+  Per-section comments + section-reviewed checkbox + sidenav ✓ sync.
+  Depends on: persistence.js, design-system.css (.sectnum, --sev-* vars).
+  Shares __commentStore with annotations.html — anchored entries (with c.anchor)
+  also render here so reviewers see one unified list per section.
+  =============================================================================
+-->
+
+<!-- ===== CSS ===== -->
+<style>
+.add-comment-btn {
+  font-family: var(--mono); font-size: 11.5px;
+  background: transparent; border: 1px dashed var(--rule-strong);
+  color: var(--ink-2); padding: 6px 12px; cursor: pointer; letter-spacing: 0.04em;
+}
+.add-comment-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.comment-form { background: var(--bg-elev); border: 1px solid var(--rule-strong); padding: 16px; margin-top: 16px; display: none; }
+.comment-form.open { display: block; }
+.comment-form .sev-picker { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.comment-form .sev-picker button {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid var(--rule-strong); background: transparent; color: var(--ink-3); cursor: pointer; border-radius: 3px;
+}
+.comment-form .sev-picker button.selected { color: var(--ink); border-color: var(--ink); background: var(--bg-sunken); }
+.comment-form input, .comment-form textarea {
+  width: 100%; font-family: var(--sans); font-size: 13.5px;
+  background: var(--bg); border: 1px solid var(--rule-strong); padding: 8px 10px; color: var(--ink); margin-bottom: 10px;
+}
+.comment-form textarea { font-family: var(--mono); min-height: 80px; resize: vertical; }
+.comment-form .form-actions { display: flex; gap: 8px; }
+.comment-form button.save   { font-family: var(--mono); padding: 6px 14px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); cursor: pointer; }
+.comment-form button.cancel { background: transparent; color: var(--ink); border: 1px solid var(--ink); padding: 6px 14px; font-family: var(--mono); cursor: pointer; }
+
+.comments { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.comment { border: 1px dashed var(--rule-strong); background: var(--bg-elev); padding: 12px 14px; }
+.comment .c-hd     { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.comment .c-title  { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.comment .c-body   { white-space: pre-wrap; font-family: var(--sans); color: var(--ink-2); font-size: 13.5px; }
+.comment .c-quote  { font-family: var(--serif); font-style: italic; color: var(--ink-2); border-left: 2px solid var(--rule-strong); padding: 3px 10px; margin: 6px 0 8px; font-size: 13px; background: var(--bg-sunken); }
+.comment .c-yours  { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 3px; }
+.comment.addressed { opacity: 0.55; }
+.comment.addressed .c-title { text-decoration: line-through; }
+.comment .c-actions { display: flex; gap: 10px; margin-top: 8px; font-family: var(--mono); font-size: 10.5px; }
+.comment .c-actions button { background: none; border: none; cursor: pointer; color: var(--ink-3); padding: 0; }
+.comment .c-actions button:hover { color: var(--ink); }
+.comment .c-actions button.danger:hover { color: var(--sev-crit); }
+</style>
+
+<!-- ===== JS ===== -->
+<script>
+// SEVERITIES — same shape as in annotations.html.
+const SEVERITIES = window.SEVERITIES || [
+  { id: "gap",  label: "Gap"      },
+  { id: "risk", label: "Risk"     },
+  { id: "q",    label: "Question" },
+  { id: "dec",  label: "Decision" },
+  { id: "nit",  label: "Nit"      },
+];
+
+function sevLabel(id) {
+  const m = SEVERITIES.find(s => s.id === id); return m ? m.label : id;
+}
+
+function enhanceSections() {
+  document.querySelectorAll("section[id]").forEach(sec => {
+    if (sec.classList.contains("hero")) return;
+    if (sec.querySelector(".section-actions")) return;
+
+    // --- Section-reviewed checkbox (injected into .sectnum) -----------------
+    const sectnum = sec.querySelector(".sectnum");
+    if (sectnum && !sectnum.querySelector(".section-reviewed")) {
+      const label = document.createElement("label");
+      label.className = "section-reviewed";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      const key = "section-" + sec.id;
+      cb.checked = !!checks[key];
+      if (cb.checked) sec.classList.add("reviewed");
+      cb.addEventListener("change", () => {
+        if (cb.checked) { checks[key] = true; sec.classList.add("reviewed"); }
+        else { delete checks[key]; sec.classList.remove("reviewed"); }
+        saveJSON(KEY_CHECK, checks);
+        renderSidenavChecks();
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(" reviewed"));
+      sectnum.appendChild(label);
+    }
+
+    // --- Add-comment button + form ------------------------------------------
+    const btn = document.createElement("button");
+    btn.className = "add-comment-btn"; btn.type = "button";
+    btn.textContent = "＋ Add comment";
+
+    const form = document.createElement("div");
+    form.className = "comment-form";
+    form.innerHTML =
+      '<div class="sev-picker"></div>' +
+      '<input type="text" class="c-title-in" placeholder="Title (required)" />' +
+      '<textarea class="c-body-in" placeholder="Body — Markdown OK"></textarea>' +
+      '<div class="form-actions">' +
+        '<button class="save"   type="button">Save</button>' +
+        '<button class="cancel" type="button">Cancel</button>' +
+      '</div>';
+
+    const picker = form.querySelector(".sev-picker");
+    let chosenSev = SEVERITIES[0].id;
+    SEVERITIES.forEach(s => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = s.label;
+      if (s.id === chosenSev) b.classList.add("selected");
+      b.addEventListener("click", () => {
+        chosenSev = s.id;
+        picker.querySelectorAll("button").forEach(x => x.classList.remove("selected"));
+        b.classList.add("selected");
+      });
+      picker.appendChild(b);
+    });
+
+    const mount = document.createElement("div");
+    mount.className = "comments";
+
+    btn.addEventListener("click", () => form.classList.toggle("open"));
+    form.querySelector(".cancel").addEventListener("click", () => form.classList.remove("open"));
+    form.querySelector(".save").addEventListener("click", () => {
+      const title = form.querySelector(".c-title-in").value.trim();
+      const body  = form.querySelector(".c-body-in").value.trim();
+      if (!title) return;
+      const id = newCommentId();
+      window.__commentStore[id] = {
+        id, sectionId: sec.id, sev: chosenSev, title, body,
+        queued: true, addressed: false, ts: Date.now()
+      };
+      saveJSON(KEY_COMMENTS, window.__commentStore);
+      queue[id] = { queued: true, ts: Date.now() };
+      saveJSON(KEY_QUEUE, queue);
+      form.querySelector(".c-title-in").value = "";
+      form.querySelector(".c-body-in").value = "";
+      form.classList.remove("open");
+      renderComments(); if (typeof updateTray === "function") updateTray();
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "section-actions";
+    actions.appendChild(btn);
+    sec.appendChild(actions); sec.appendChild(form); sec.appendChild(mount);
+  });
+}
+
+// Renders BOTH per-section comments AND text-range annotations (c.anchor present).
+function renderComments() {
+  document.querySelectorAll("section[id]").forEach(sec => {
+    const mount = sec.querySelector(".comments");
+    if (!mount) return;
+    mount.innerHTML = "";
+    Object.values(window.__commentStore)
+      .filter(c => c.sectionId === sec.id).sort((a, b) => a.ts - b.ts)
+      .forEach(c => {
+        const isAnnot = !!c.anchor;
+        const card = document.createElement("div");
+        card.className = "comment" + (c.addressed ? " addressed" : "");
+        const quoteHTML = isAnnot
+          ? '<div class="c-quote">&ldquo;' + (c.anchor.text || "").replace(/[<>&]/g, ch => ({"<":"&lt;",">":"&gt;","&":"&amp;"}[ch])) + '&rdquo;</div>'
+          : "";
+        card.innerHTML =
+          '<div class="c-hd">' +
+            '<span class="chip ' + c.sev + '"><span class="dot"></span>' + sevLabel(c.sev) + '</span>' +
+            '<span class="c-yours">' + (isAnnot ? "annotation" : "yours") + '</span>' +
+            '<span>' + new Date(c.ts).toISOString().slice(0, 10) + '</span>' +
+          '</div>' + quoteHTML +
+          (isAnnot ? "" : '<div class="c-title"></div>') +
+          '<div class="c-body"></div>' +
+          '<div class="c-actions">' +
+            (isAnnot ? '<button data-act="jump">Jump to</button>' : "") +
+            '<button data-act="edit">Edit</button>' +
+            '<button data-act="queue">' + (c.queued ? "✓ Queued" : "Queue") + '</button>' +
+            '<button data-act="addr">'  + (c.addressed ? "↩ Reopen" : "Mark addressed") + '</button>' +
+            '<button data-act="del" class="danger">Delete</button>' +
+          '</div>';
+        if (!isAnnot) card.querySelector(".c-title").textContent = c.title;
+        card.querySelector(".c-body").textContent = c.body || "";
+        card.querySelectorAll(".c-actions button").forEach(b => {
+          b.addEventListener("click", () => onCommentAction(c.id, b.getAttribute("data-act")));
+        });
+        mount.appendChild(card);
+      });
+  });
+}
+
+function onCommentAction(id, act) {
+  const c = window.__commentStore[id]; if (!c) return;
+  if (act === "del") {
+    delete window.__commentStore[id]; delete queue[id];
+  } else if (act === "queue") {
+    c.queued = !c.queued;
+    if (c.queued) queue[id] = { queued: true, ts: Date.now() }; else delete queue[id];
+  } else if (act === "addr") {
+    c.addressed = !c.addressed;
+  } else if (act === "edit") {
+    // Per-section comments edit in-place; annotations edit via popover.
+    if (c.anchor) {
+      const mark = document.querySelector('mark.annot[data-annot-id="' + id + '"]');
+      if (mark && typeof openEditPopover === "function") openEditPopover(id, mark);
+      return;
+    }
+    const newTitle = prompt("Title", c.title); if (newTitle === null) return;
+    const newBody  = prompt("Body",  c.body);  if (newBody  === null) return;
+    c.title = newTitle.trim(); c.body = newBody.trim();
+  } else if (act === "jump") {
+    const mark = document.querySelector('mark.annot[data-annot-id="' + id + '"]');
+    if (mark) { mark.scrollIntoView({ behavior: "smooth", block: "center" });
+                mark.classList.add("flash"); setTimeout(() => mark.classList.remove("flash"), 900); }
+    return;
+  }
+  saveJSON(KEY_COMMENTS, window.__commentStore);
+  saveJSON(KEY_QUEUE, queue);
+  renderComments(); if (typeof renderAnnotations === "function") renderAnnotations();
+  if (typeof updateTray === "function") updateTray();
+}
+
+function renderSidenavChecks() {
+  document.querySelectorAll(".sidenav a").forEach(a => {
+    const href = a.getAttribute("href");
+    if (!href || !href.startsWith("#")) return;
+    const secId = href.slice(1);
+    const old = a.querySelector(".check"); if (old) old.remove();
+    if (checks["section-" + secId]) {
+      const span = document.createElement("span");
+      span.className = "check"; span.textContent = "✓";
+      a.appendChild(span);
+    }
+  });
+}
+
+// Boot
+enhanceSections();
+renderComments();
+renderSidenavChecks();
+</script>
