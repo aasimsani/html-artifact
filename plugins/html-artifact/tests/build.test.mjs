@@ -101,3 +101,32 @@ test('build embeds each section text, so the review kit can show what changed be
   assert.ok(json, 'sections block missing');
   assert.deepEqual(JSON.parse(json[1]), { a: 'Alpha & one First bold text.', b: 'Second.' });
 });
+
+test('inlined components are minified: no comment lines and no indentation', () => {
+  const dir = fixtureDir();
+  writeFileSync(join(dir, 'components', 'mini.css'), '/* requires: shell */\n/* A block comment. */\n.a {\n  color: red;\n}\n');
+  writeFileSync(join(dir, 'components', 'mini.js'), '// requires: shell\n// A line comment.\n(() => {\n    const url = "http://x.y/z"; // trailing\n    window.mini = url;\n})();\n');
+  const out = build(page('mini'), { componentsDir: join(dir, 'components') });
+  const css = out.match(/<style data-component="mini">([\s\S]*?)<\/style>/)[1];
+  const js = out.match(/<script data-component="mini">([\s\S]*?)<\/script>/)[1];
+  assert.equal(css, '.a{color:red;}');
+  assert.doesNotMatch(js, /A line comment|^\s+/m);
+  assert.match(js, /"http:\/\/x\.y\/z"/);
+});
+
+test('a typical document runtime stays within a 55 KB budget once minified', () => {
+  // Budget for shell, review, content and timeline, the components most documents use.
+  const out = build(page('shell,review,content,timeline'));
+  const runtime = [...out.matchAll(/<(style|script) data-component="[^"]*">([\s\S]*?)<\/\1>/g)].reduce((n, m) => n + m[2].length, 0);
+  assert.ok(runtime <= 55 * 1024, `runtime is ${(runtime / 1024).toFixed(1)} KB`);
+});
+
+test('build --verify builds the page and reports problems in the same call', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'build-verify-'));
+  writeFileSync(join(dir, 'ok.src.html'), bare('<section id="a"><h2>Fine.</h2><p>This page passes every check without any trouble at all.</p></section>'));
+  writeFileSync(join(dir, 'bad.src.html'), bare('<section id="a"><h2>Wide.</h2><div style="width:2000px">This block is far too wide for a phone screen.</div></section>'));
+  const ok = execFileSync('node', [BUILD, join(dir, 'ok.src.html'), '--verify'], { stdio: 'pipe' }).toString();
+  assert.match(ok, /✓ .*ok\.html/);
+  assert.throws(() => execFileSync('node', [BUILD, join(dir, 'bad.src.html'), '--verify'], { stdio: 'pipe' }),
+    e => e.status === 1 && /overflow at 400px/.test(e.stdout.toString()));
+});

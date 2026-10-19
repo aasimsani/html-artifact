@@ -1,0 +1,2466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="artifact-id" content="html-artifact-v2-tour">
+<meta name="review-label" content="Review">
+<meta name="review-severities" content="Issue, Suggestion, Question, Nit, Praise">
+<title>html-artifact v2 — a tour of every component</title>
+<style>
+#toast-preview { margin: 12px 0 20px; padding: 18px; border: 1px dashed var(--rule-strong); border-radius: 8px; }
+#toast-preview .toast { display: inline-block; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: var(--bg); transform: translateY(var(--lift, 0px)); transition: transform var(--duration, 300ms) var(--easing, ease-out); box-shadow: var(--shadow); }
+#toast-preview:hover .toast { transform: translateY(calc(var(--lift, 0px) - 12px)); }
+</style>
+<style data-component="shell">:root{color-scheme:light;--bg:#fafaf7;--bg-elev:#ffffff;--bg-sunken:#f3f2ed;--rule:#e2e0d6;--rule-strong:#cdcabd;--ink:#1e1d1a;--ink-2:#4a473f;--ink-3:#6f6b60;--ink-4:#a8a496;--accent:#4338ca;--accent-soft:#eef0fb;--sev-crit:#b91c1c;--sev-crit-bg:#fbecec;--sev-high:#b45309;--sev-high-bg:#fdf3e3;--sev-med:#8a6a08;--sev-med-bg:#fbf6dc;--sev-low:#1d4ed8;--sev-low-bg:#e9eefe;--sev-good:#166534;--sev-good-bg:#e3f1e6;--sev-q:#6d28d9;--sev-q-bg:#efe9fb;--diff-add:#dff3df;--diff-add-2:#b8e1b8;--diff-del:#f8d4d4;--diff-del-2:#ecb4b4;--diff-hunk:#e9e8e0;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Inter",-apple-system,BlinkMacSystemFont,"Helvetica Neue",system-ui,sans-serif;--serif:"Newsreader","Source Serif Pro",Charter,Georgia,serif;--shadow:0 8px 28px rgba(30,29,26,.14);}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#141412;--bg-elev:#1d1c19;--bg-sunken:#0e0e0c;--rule:#2e2c27;--rule-strong:#45423a;--ink:#ecebe6;--ink-2:#c4c0b4;--ink-3:#9a968a;--ink-4:#6b675e;--accent:#a5b4fc;--accent-soft:#23253a;--sev-crit:#f19999;--sev-crit-bg:#3a1a1a;--sev-high:#f2b46b;--sev-high-bg:#3a2812;--sev-med:#e3c65a;--sev-med-bg:#352d10;--sev-low:#93b4f8;--sev-low-bg:#172440;--sev-good:#7bd88f;--sev-good-bg:#16301d;--sev-q:#c4a8f5;--sev-q-bg:#2a1f40;--diff-add:#17301c;--diff-add-2:#1f4a28;--diff-del:#3a1a1a;--diff-del-2:#5a2626;--diff-hunk:#24231f;--shadow:0 8px 28px rgba(0,0,0,.5);}}:root[data-theme="dark"]{color-scheme:dark;--bg:#141412;--bg-elev:#1d1c19;--bg-sunken:#0e0e0c;--rule:#2e2c27;--rule-strong:#45423a;--ink:#ecebe6;--ink-2:#c4c0b4;--ink-3:#9a968a;--ink-4:#6b675e;--accent:#a5b4fc;--accent-soft:#23253a;--sev-crit:#f19999;--sev-crit-bg:#3a1a1a;--sev-high:#f2b46b;--sev-high-bg:#3a2812;--sev-med:#e3c65a;--sev-med-bg:#352d10;--sev-low:#93b4f8;--sev-low-bg:#172440;--sev-good:#7bd88f;--sev-good-bg:#16301d;--sev-q:#c4a8f5;--sev-q-bg:#2a1f40;--diff-add:#17301c;--diff-add-2:#1f4a28;--diff-del:#3a1a1a;--diff-del-2:#5a2626;--diff-hunk:#24231f;--shadow:0 8px 28px rgba(0,0,0,.5);}[data-tone="crit"]{--tone:var(--sev-crit);--tone-bg:var(--sev-crit-bg);}[data-tone="high"]{--tone:var(--sev-high);--tone-bg:var(--sev-high-bg);}[data-tone="med"]{--tone:var(--sev-med);--tone-bg:var(--sev-med-bg);}[data-tone="low"]{--tone:var(--sev-low);--tone-bg:var(--sev-low-bg);}[data-tone="good"]{--tone:var(--sev-good);--tone-bg:var(--sev-good-bg);}[data-tone="q"]{--tone:var(--sev-q);--tone-bg:var(--sev-q-bg);}[data-tone="nit"]{--tone:var(--ink-3);--tone-bg:var(--bg-sunken);}*,*::before,*::after{box-sizing:border-box;}html{background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;scroll-padding-top:24px;}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);font-feature-settings:"ss01","cv11";}.masthead{max-width:1240px;margin:0 auto;padding:56px 24px 8px;}.page{max-width:1240px;margin:0 auto;padding:0 24px 96px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:56px;}main{min-width:0;}main > section{padding:40px 0;border-top:1px solid var(--rule);}main > section:first-child{border-top:0;padding-top:16px;}nav.toc{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto;padding-top:16px;font-size:13px;}nav.toc a{display:block;padding:5px 10px;color:var(--ink-3);text-decoration:none;border-left:2px solid var(--rule);line-height:1.35;}nav.toc a:hover{color:var(--ink);}nav.toc a[aria-current="true"]{color:var(--ink);border-left-color:var(--accent);}h1{font:500 clamp(34px,5vw,54px)/1.06 var(--serif);letter-spacing:-.02em;margin:10px 0 18px;text-wrap:balance;}h2{font:500 clamp(26px,3.4vw,36px)/1.12 var(--serif);letter-spacing:-.015em;margin:6px 0 14px;text-wrap:balance;}h3{font:600 17px/1.35 var(--sans);margin:30px 0 8px;}h4{font:600 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:24px 0 8px;}.eyebrow{font:500 12px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0;}.lede{font:400 19px/1.5 var(--serif);color:var(--ink-2);max-width:68ch;margin:0 0 20px;}main p,main li{max-width:72ch;overflow-wrap:break-word;}main ul,main ol{padding-left:1.3em;}main li + li{margin-top:4px;}a{color:var(--accent);text-underline-offset:2px;}strong{font-weight:600;}hr{border:0;border-top:1px solid var(--rule);margin:32px 0;}code{font:.88em var(--mono);background:var(--bg-sunken);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere;}pre{font:13px/1.55 var(--mono);background:var(--bg-sunken);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;margin:16px 0;overflow-x:auto;max-width:100%;}pre code{background:none;padding:0;font-size:inherit;overflow-wrap:normal;}table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;font-size:14px;margin:16px 0;}th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--rule);}th{font:600 12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);border-bottom:2px solid var(--rule-strong);}th.num,td.num{text-align:right;font-variant-numeric:tabular-nums;}tbody tr:hover{background:var(--bg-sunken);}svg,img,video{max-width:100%;height:auto;}figure{margin:24px 0;}figcaption{font-size:13px;color:var(--ink-3);margin-top:8px;}[data-theme-toggle]{position:fixed;top:12px;right:12px;z-index:20;font:12px var(--mono);color:var(--ink-2);background:var(--bg-elev);border:1px solid var(--rule-strong);border-radius:999px;padding:5px 12px;cursor:pointer;}[data-theme-toggle]:hover{color:var(--ink);}:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}@media (max-width:900px){.page{grid-template-columns:minmax(0,1fr);gap:0;}nav.toc{display:none;}.masthead{padding-top:48px;}}@media print{nav.toc,[data-theme-toggle]{display:none;}.page{display:block;}:root{--bg:#fff;--bg-sunken:#f5f5f5;--ink:#000;}main > section{break-inside:avoid-page;}}</style>
+<style data-component="review">main > section{position:relative;}.rv-check{position:absolute;top:40px;right:0;display:flex;gap:6px;align-items:center;font:12px var(--mono);color:var(--ink-3);cursor:pointer;user-select:none;}main > section:first-child > .rv-check{top:16px;}.rv-check input{accent-color:var(--accent);margin:0;}main > section.rv-done > :not(.rv-ui){opacity:.55;}main > section.rv-done > .eyebrow{text-decoration:line-through;}nav.toc a.rv-done::after{content:" ✓";color:var(--sev-good);}.rv-add{margin-top:20px;font:12px var(--mono);color:var(--ink-3);background:none;border:1px dashed var(--rule-strong);border-radius:6px;padding:6px 12px;cursor:pointer;}.rv-add:hover{color:var(--ink);border-color:var(--ink-3);}.rv-form{margin-top:16px;}.rv-editor{display:grid;gap:10px;}.rv-sevs{display:flex;flex-wrap:wrap;gap:6px;}.rv-pill{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.rv-pill[aria-pressed="true"]{background:var(--tone-bg);color:var(--tone);border-color:var(--tone);}.rv-editor textarea,.rv-drawer textarea{width:100%;font:14px/1.5 var(--sans);color:var(--ink);background:var(--bg-elev);border:1px solid var(--rule-strong);border-radius:6px;padding:8px 10px;resize:vertical;}.rv-actions,.rv-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.rv-btn{font:13px var(--sans);padding:5px 12px;border-radius:6px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink);cursor:pointer;}.rv-primary{background:var(--accent);border-color:var(--accent);color:var(--bg);}.rv-danger{color:var(--sev-crit);}.rv-cards:not(:empty){display:grid;gap:10px;margin-top:20px;}.rv-card{border:1px solid var(--rule);border-left:3px solid var(--tone);background:var(--bg-elev);border-radius:6px;padding:10px 12px;font-size:14px;max-width:72ch;}.rv-card.rv-addressed{opacity:.55;}.rv-card.rv-outdated{border-style:dashed;border-left-style:solid;}.rv-card-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.rv-spacer{flex:1;}.rv-badge{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--tone);background:var(--tone-bg);padding:1px 7px;border-radius:4px;}.rv-flag{color:var(--ink-3);background:var(--bg-sunken);}.rv-link{font:12px var(--mono);color:var(--ink-3);background:none;border:0;padding:0;cursor:pointer;display:inline-flex;gap:4px;align-items:center;}.rv-link:hover{color:var(--ink);}.rv-quote{margin:8px 0 0;padding:2px 0 2px 10px;border-left:2px solid var(--rule-strong);color:var(--ink-2);font:italic 14px/1.5 var(--serif);}.rv-body{margin-top:6px;white-space:pre-wrap;overflow-wrap:break-word;}mark.rv-mark{background:var(--tone-bg);color:inherit;border-bottom:2px solid var(--tone);padding:0 1px;cursor:pointer;}mark.rv-mark:hover,mark.rv-mark.rv-flash{filter:brightness(.92);}:root[data-theme="dark"] mark.rv-mark:hover,:root[data-theme="dark"] mark.rv-mark.rv-flash{filter:brightness(1.25);}.rv-helper{position:fixed;z-index:40;font:600 12px var(--sans);padding:5px 10px;border-radius:6px;border:0;background:var(--ink);color:var(--bg);box-shadow:var(--shadow);cursor:pointer;}.rv-popover{position:fixed;z-index:41;width:min(380px,calc(100vw - 16px));background:var(--bg-elev);border:1px solid var(--rule-strong);border-radius:8px;padding:12px;box-shadow:var(--shadow);}.rv-popover .rv-quote{margin:0 0 10px;max-height:6em;overflow:auto;}.rv-helper[hidden],.rv-popover[hidden]{display:none;}.rv-tray{position:fixed;right:16px;bottom:16px;z-index:30;font:13px var(--sans);padding:8px 14px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink);box-shadow:var(--shadow);cursor:pointer;}.rv-tray b{margin-left:4px;padding:0 7px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;}.rv-drawer{position:fixed;top:0;right:0;bottom:0;z-index:50;width:min(480px,100vw);display:flex;flex-direction:column;gap:12px;padding:16px;background:var(--bg-elev);border-left:1px solid var(--rule-strong);box-shadow:var(--shadow);transform:translateX(105%);visibility:hidden;transition:transform .2s cubic-bezier(.22,.61,.36,1),visibility 0s .2s;}.rv-drawer.rv-open{transform:none;visibility:visible;transition:transform .2s cubic-bezier(.22,.61,.36,1);}.rv-drawer-head{display:flex;justify-content:space-between;align-items:center;font-size:15px;}.rv-drawer select{font:13px var(--sans);padding:5px 8px;border-radius:6px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink);}.rv-drawer textarea{flex:1;font:12.5px/1.5 var(--mono);resize:none;}.rv-close{border:0;font-size:20px;line-height:1;padding:2px 8px;}@media (max-width:900px){.rv-check{position:static;margin-bottom:8px;}}@media print{.rv-ui:not(.rv-cards){display:none !important;}}.rv-inline{font:12px var(--mono);color:var(--ink-2);display:inline-flex;gap:6px;align-items:center;}.rv-inline input{accent-color:var(--sev-crit);margin:0;}.rv-editor textarea.rv-suggestion{font:13px/1.5 var(--mono);background:var(--bg-sunken);}.rv-suggested{margin:8px 0 0;font-size:12.5px;}.rv-send-status{margin:0;font-size:13px;color:var(--ink-3);flex:1;min-width:160px;}.rv-kinds,.rv-qlabels{display:flex;flex-wrap:wrap;gap:6px;}.rv-kind{font:12px var(--sans);padding:3px 10px;border-radius:6px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.rv-kind[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);}.rv-qlabel{font:12px var(--mono);padding:2px 9px;border-radius:999px;border:1px dashed var(--rule-strong);background:none;color:var(--ink-3);cursor:pointer;}.rv-qlabel[aria-pressed="true"]{border-style:solid;border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}.rv-editor textarea[hidden]{display:none;}mark.rv-mark[data-kind="delete"]{text-decoration:line-through;text-decoration-color:var(--sev-crit);}mark.rv-mark[data-kind="replace"]{border-bottom-style:dashed;}.rv-tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);}.rv-tabs button{font:600 13px var(--sans);padding:6px 12px;border:0;border-bottom:2px solid transparent;background:none;color:var(--ink-3);cursor:pointer;}.rv-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}.rv-list{display:flex;flex-direction:column;gap:8px;overflow:auto;flex:1;}.rv-list[hidden],.rv-export[hidden]{display:none;}.rv-export{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;}.rv-list-item{display:grid;gap:3px;text-align:left;font:14px/1.4 var(--sans);color:var(--ink);padding:8px 10px;border:1px solid var(--rule);border-left:3px solid var(--tone);border-radius:6px;background:var(--bg);cursor:pointer;}.rv-list-item small{font:12px var(--mono);color:var(--ink-3);}.rv-list-item q{font:italic 14px var(--serif);color:var(--ink-2);}.rv-list-item .rv-badge{justify-self:start;}.rv-list-body{white-space:pre-wrap;}.rv-empty{color:var(--ink-3);font-size:14px;}.rv-general{align-self:flex-start;}.rv-notice{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;padding:8px 14px;border-radius:8px;background:var(--ink);color:var(--bg);font-size:14px;box-shadow:var(--shadow);}.rv-changed-bar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px;padding:6px 10px;border-radius:6px;font-size:13px;color:var(--sev-high);background:var(--sev-high-bg);}.rv-diff{margin:0 0 12px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;font-size:14px;line-height:1.6;background:var(--bg-elev);}.rv-diff[hidden]{display:none;}.rv-diff ins{text-decoration:none;background:var(--diff-add-2);}.rv-diff del{background:var(--diff-del-2);}</style>
+<style data-component="ask">.ask{margin:20px 0;padding:14px 16px;max-width:80ch;border:1px solid var(--rule-strong);border-left:3px solid var(--accent);border-radius:6px;background:var(--bg-elev);}.ask > p:first-child{margin:0 0 8px;}.ask label{display:flex;gap:8px;align-items:baseline;margin:6px 0;padding:7px 10px;border:1px solid var(--rule);border-radius:6px;cursor:pointer;}.ask label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}.ask input[type=radio]{accent-color:var(--accent);margin:0;}.ask .rec{margin-left:auto;font:600 12px var(--mono);padding:0 6px;border-radius:4px;color:var(--sev-good);background:var(--sev-good-bg);white-space:nowrap;}.ask textarea{display:block;width:100%;margin-top:8px;font:14px var(--sans);padding:6px 8px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg);color:var(--ink);resize:vertical;}.ask .ask-status{margin:8px 0 0;font:12px var(--mono);color:var(--ink-3);}.ask[data-status="chosen"] .ask-status,.ask[data-status="default kept"] .ask-status{color:var(--sev-good);}</style>
+<style data-component="code">:root{--hl-k:#6d28d9;--hl-s:#047857;--hl-c:#6f6b60;--hl-b:#0e7490;--hl-n:#b45309;--hl-d:#be185d;--hl-t:#1e40af;}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hl-k:#c4a8f5;--hl-s:#7bd88f;--hl-c:#9a968a;--hl-b:#67c6d8;--hl-n:#f2b46b;--hl-d:#f08fc0;--hl-t:#93b4f8;}}:root[data-theme="dark"]{--hl-k:#c4a8f5;--hl-s:#7bd88f;--hl-c:#9a968a;--hl-b:#67c6d8;--hl-n:#f2b46b;--hl-d:#f08fc0;--hl-t:#93b4f8;}pre.diff{padding:0;}pre.diff[data-file]::before{content:attr(data-file);display:block;position:sticky;left:0;padding:8px 16px;font:600 12px var(--mono);color:var(--ink-2);background:var(--bg-elev);border-bottom:1px solid var(--rule);}pre.diff code{display:block;padding:8px 0;}pre.diff .ln{display:block;min-width:max-content;padding:0 16px;}pre.diff .ln.add{background:var(--diff-add);}pre.diff .ln.del{background:var(--diff-del);}pre.diff .ln.hunk{background:var(--diff-hunk);color:var(--ink-3);}.hl-k{color:var(--hl-k);font-weight:500;}.hl-s{color:var(--hl-s);}.hl-c{color:var(--hl-c);font-style:italic;}.hl-b{color:var(--hl-b);}.hl-n{color:var(--hl-n);}.hl-d{color:var(--hl-d);font-weight:500;}.hl-t{color:var(--hl-t);}.annotated{display:grid;grid-template-columns:minmax(0,3fr) minmax(220px,2fr);gap:4px 14px;align-items:start;margin:20px 0;scroll-margin-top:24px;}.annotated > .anno-tools{grid-column:1;display:flex;justify-content:flex-end;}.annotated > pre,.annotated > .split{grid-column:1;margin:0;}.annotated > .notes{grid-column:2;grid-row:1 / span 3;}.annotated.viewed > pre,.annotated.viewed > .split{opacity:.6;}.anno-tools button{font:12px var(--mono);padding:2px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.ln a.mark,.notes .mark{display:inline-block;min-width:26px;margin-left:8px;padding:0 5px;border-radius:9px;text-align:center;font:600 12px/18px var(--mono);text-decoration:none;color:var(--bg);background:var(--ink-2);}.notes .mark{margin:0 6px 0 0;}.ln[data-note]{box-shadow:inset 3px 0 var(--ink-2);}.notes{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px;}main .notes > li{margin:0;max-width:none;padding:8px 10px;border-left:3px solid var(--tone,var(--rule-strong));background:var(--tone-bg,var(--bg-elev));border-radius:0 6px 6px 0;scroll-margin-top:24px;}.notes > li > b{font:600 12px var(--mono);text-transform:uppercase;color:var(--tone,var(--ink-2));}.notes > li.active{outline:2px solid var(--tone,var(--accent));}.split{display:grid;grid-template-columns:1fr 1fr;overflow-x:auto;font:13px/1.55 var(--mono);background:var(--bg-sunken);border:1px solid var(--rule);border-radius:6px;}.split .side{padding:8px 0;min-width:0;overflow-x:auto;}.split .side.old{border-right:1px solid var(--rule);}.split .ln{display:block;min-width:max-content;padding:0 12px;white-space:pre;}.split .ln.add{background:var(--diff-add);}.split .ln.del{background:var(--diff-del);}.split .ln.hunk{background:var(--diff-hunk);color:var(--ink-3);}@media (max-width:900px){.annotated{grid-template-columns:minmax(0,1fr);}.annotated > .notes{grid-column:1;grid-row:auto;}}nav.files{margin:16px 0;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--bg-elev);font-size:14px;}.files-head{margin:0 0 6px;}.files-head .count{font:12px var(--mono);color:var(--ink-3);}nav.files ul{list-style:none;margin:0;padding:0;columns:2 260px;}nav.files li{margin:2px 0;}nav.files input{accent-color:var(--accent);margin-right:6px;}nav.files a{font:13px var(--mono);}table.findings td:first-child{font:600 13px var(--mono);white-space:nowrap;}table.findings tr[data-tone] td:nth-child(2){font:600 12px var(--mono);text-transform:uppercase;color:var(--tone);white-space:nowrap;}table.findings tr[data-tone] td:first-child{border-left:3px solid var(--tone);}.risk{list-style:none;margin:16px 0;padding:0;display:grid;gap:6px;}main .risk > li{max-width:none;margin:0;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:8px 10px;border:1px solid var(--rule);border-left:4px solid var(--tone,var(--ink-3));border-radius:6px;font-size:14px;color:var(--ink-2);background:linear-gradient(to right,var(--tone-bg,var(--bg-sunken)) calc(var(--w,0) * 1%),var(--bg-elev) 0);}.risk code{background:none;padding:0;font-weight:600;color:var(--ink);}</style>
+<style data-component="content">.callout{margin:20px 0;padding:14px 16px;max-width:80ch;border:1px solid var(--rule);border-left:3px solid var(--tone,var(--accent));border-radius:6px;background:var(--tone-bg,var(--accent-soft));}.callout > b:first-child{display:block;margin-bottom:4px;font:600 12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--tone,var(--accent));}.callout > :last-child{margin-bottom:0;}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;margin:20px 0;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;}.stats > div{display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:4px;padding:14px 16px;background:var(--bg-elev);}.stats dt{font-size:13px;line-height:1.35;color:var(--ink-3);}.stats dd{margin:0;font:600 26px/1.15 var(--sans);font-variant-numeric:tabular-nums;color:var(--tone,var(--ink));}.bar{display:flex;gap:2px;margin:16px 0;border-radius:6px;overflow:hidden;font:600 12px/1 var(--mono);}.bar > span{flex:var(--v,1) 1 0;min-width:0;padding:9px 6px 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--tone,var(--ink-2));background:var(--tone-bg,var(--bg-sunken));border-top:3px solid var(--tone,var(--ink-3));}.claim{border-bottom:1px dotted var(--ink-3);}.claim[data-evidence="verified"]{--tone:var(--sev-good);--tone-bg:var(--sev-good-bg);}.claim[data-evidence="inferred"]{--tone:var(--sev-q);--tone-bg:var(--sev-q-bg);}.claim[data-evidence="guess"]{--tone:var(--sev-high);--tone-bg:var(--sev-high-bg);}.claim::after{content:attr(data-evidence);margin-left:4px;padding:0 4px;border-radius:3px;font:600 12px var(--mono);vertical-align:1px;color:var(--tone);background:var(--tone-bg);}.chain{list-style:none;counter-reset:chain;margin:16px 0;padding:0;}main .chain > li{counter-increment:chain;position:relative;max-width:72ch;margin:0;padding:10px 0 10px 44px;border-bottom:1px solid var(--rule);}.chain > li::before{content:counter(chain);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 13px var(--mono);border:1.5px solid var(--tone,var(--ink-3));color:var(--tone,var(--ink-2));background:var(--tone-bg,transparent);}.progress{margin:16px 0 6px;font:600 12px var(--mono);color:var(--ink-3);}.ranked{list-style:none;counter-reset:ranked;margin:0 0 16px;padding:0;display:grid;gap:8px;}main .ranked > li{counter-increment:ranked;display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:6px;max-width:80ch;margin:0;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--bg-elev);}.ranked > li::before{content:counter(ranked);grid-row:1 / span 2;font:600 20px/1.2 var(--serif);color:var(--ink-2);}.ranked small{grid-column:2;color:var(--ink-3);font-size:13px;}.checklist{list-style:none;margin:0 0 16px;padding:0;}main .checklist > li{margin:0;padding:7px 0;border-bottom:1px solid var(--rule);}.checklist .owner{font:12px var(--mono);color:var(--ink-3);white-space:nowrap;}.ranked label,.checklist label{cursor:pointer;}.ranked input,.checklist input{accent-color:var(--accent);margin:0 6px 0 0;}.ranked > li:has(input:checked),.checklist > li:has(input:checked){opacity:.55;}.checklist > li:has(input:checked) label{text-decoration:line-through;}</style>
+<style data-component="diagram">.flow > ol{list-style:none;margin:0;padding:0;display:flex;align-items:stretch;}.flow > ol + ol{margin-top:20px;}main .flow li{position:relative;flex:1 1 0;min-width:0;max-width:none;margin:0 0 0 56px;padding:10px 12px;font:600 14px/1.3 var(--sans);overflow-wrap:anywhere;background:var(--tone-bg,var(--bg-elev));border:1px solid var(--tone,var(--rule-strong));border-radius:6px;}main .flow li:first-child{margin-left:0;}.flow li small{display:block;margin-top:4px;font:400 12px/1.4 var(--mono);color:var(--ink-3);}.flow li + li::before{content:"→";position:absolute;left:-56px;width:56px;top:50%;transform:translateY(-50%);text-align:center;font:20px/1 var(--sans);color:var(--ink-3);}.flow li[data-label]::after{content:attr(data-label);position:absolute;left:-56px;width:56px;top:calc(50% - 28px);text-align:center;font:12px/1.2 var(--mono);color:var(--ink-2);overflow-wrap:anywhere;}@media (max-width:700px){.flow > ol{flex-direction:column;}main .flow li{margin:40px 0 0;}main .flow li:first-child{margin-top:0;}.flow li + li::before{content:"↓";left:0;top:-32px;width:24px;transform:none;}.flow li[data-label]::after{left:28px;top:-28px;width:auto;text-align:left;}}.diagram{margin:24px 0;}.diagram svg{display:block;width:100%;height:auto;color:var(--ink-2);overflow:visible;}.diagram .node rect,.diagram .node path,.diagram .node ellipse,.diagram .node circle,.diagram .node polygon{fill:var(--bg-elev);stroke:currentColor;stroke-width:1.5;}.diagram .node.hot rect,.diagram .node.hot path,.diagram .node.hot ellipse{fill:var(--accent-soft);stroke:var(--accent);}.diagram .node.problem rect,.diagram .node.problem path,.diagram .node.problem ellipse{fill:var(--sev-crit-bg);stroke:var(--sev-crit);}.diagram .node.external rect,.diagram .node.external path{stroke-dasharray:5 4;}.diagram .node.store path,.diagram .node.store ellipse{fill:var(--bg-sunken);}.diagram .node[data-tone] rect,.diagram .node[data-tone] path{fill:var(--tone-bg);stroke:var(--tone);}.diagram .node[data-detail]{cursor:pointer;}.diagram .node[data-detail]:focus{outline:none;}.diagram .node[data-detail]:focus-visible rect,.diagram .node[data-detail]:focus-visible path,.diagram .node.open rect,.diagram .node.open path{stroke-width:3;}.diagram text{font:13px var(--mono);fill:var(--ink);text-anchor:middle;dominant-baseline:middle;}.diagram text.sub{fill:var(--ink-3);font-size:12px;}.diagram .edge{fill:none;stroke:currentColor;stroke-width:1.5;}.diagram .edge.async{stroke-dasharray:6 4;}.diagram .edge.fallback{stroke-dasharray:2 4;}.diagram .edge.hot{stroke:var(--accent);stroke-width:2.5;}.diagram .edge.problem{stroke:var(--sev-crit);}.diagram .label rect{fill:var(--bg-elev);stroke:none;}.diagram .label text{fill:var(--ink-2);font-size:12px;}.diagram .arrowhead{fill:currentColor;}.diagram .detail{margin-top:10px;padding:10px 12px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 6px 6px 0;font-size:14px;max-width:72ch;}.diagram .detail b{display:block;font:600 12px var(--mono);text-transform:uppercase;color:var(--accent);}.diagram .tools{display:flex;gap:8px;margin-top:6px;}.diagram .copy-svg{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0 0;font-size:13px;color:var(--ink-3);}</style>
+<style data-component="editor">.editor-list{list-style:none;margin:16px 0;padding:0;display:grid;gap:8px;max-width:72ch;}.editor-list > li,.et-trash-list > li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--bg-elev);cursor:grab;font-size:14px;}.editor-list > li:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}.editor-list > li.et-dragover{border-color:var(--accent);}.et-deleted{opacity:.5;cursor:default;}.editor-list > li > small,.et-trash-list > li > small{color:var(--ink-3);font:12px var(--mono);}.et-chips{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto;}.et-chip{font:12px var(--mono);padding:2px 9px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-sunken);color:var(--ink-3);cursor:pointer;}.et-chip[aria-pressed="true"]{background:var(--tone-bg);color:var(--tone);border-color:var(--tone);}.et-deleted .et-chips{visibility:hidden;}.et-del{font:12px var(--mono);color:var(--ink-3);background:none;border:1px solid var(--rule-strong);border-radius:6px;padding:2px 8px;cursor:pointer;}.et-del:hover{color:var(--sev-crit);border-color:var(--sev-crit);}.et-deleted .et-del:hover{color:var(--sev-good);border-color:var(--sev-good);}.et-edit{font:inherit;color:inherit;background:var(--bg-sunken);border:1px solid var(--rule-strong);border-radius:4px;padding:2px 6px;flex:1 1 160px;min-width:0;}.et-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:4px 0 8px;}.et-filter{font:13px var(--sans);padding:4px 8px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg-elev);color:var(--ink);}.et-count{font:12px var(--mono);color:var(--ink-3);}.et-trash{margin:12px 0;max-width:72ch;}.et-trash:not([hidden]) > summary{font:12px var(--mono);color:var(--ink-3);cursor:pointer;}.et-trash-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;}.et-trash-list > li{border-style:dashed;cursor:default;}.et-toast{position:fixed;left:16px;bottom:16px;z-index:60;display:flex;align-items:center;gap:10px;font:13px var(--sans);color:var(--ink);background:var(--bg-elev);border:1px solid var(--rule-strong);border-radius:8px;padding:8px 12px;box-shadow:var(--shadow);}.et-toast button{font:12px var(--mono);color:var(--accent);background:none;border:0;cursor:pointer;padding:0;}@media (max-width:500px){.editor-list > li{flex-direction:column;align-items:stretch;}.et-chips{margin-left:0;}}</style>
+<style data-component="erd">.erd{position:relative;margin:20px 0;}.erd .search{display:flex;align-items:center;gap:8px;margin:0 0 14px;}.erd .search input{font:14px var(--sans);padding:5px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg-elev);color:var(--ink);min-width:0;flex:0 1 240px;}.erd .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;position:relative;z-index:1;align-items:start;}.erd .lines{position:absolute;top:0;left:0;z-index:0;color:var(--ink-3);overflow:visible;}.erd .lines .edge{fill:none;stroke:currentColor;stroke-width:1.5;}.erd .lines .edge.active{stroke:var(--accent);stroke-width:2.5;}.erd .lines .label rect{fill:var(--bg-elev);stroke:none;}.erd .lines .label text{fill:var(--ink-2);font:700 12px var(--mono);text-anchor:middle;dominant-baseline:middle;}table.entity{width:100%;border-collapse:collapse;background:var(--bg-elev);border:1px solid var(--rule-strong);border-radius:8px;font:13px var(--mono);transition:opacity .15s;}table.entity caption{cursor:pointer;text-align:left;padding:8px 12px;font:600 13px var(--sans);background:var(--bg-sunken);border-bottom:1px solid var(--rule-strong);border-radius:8px 8px 0 0;}table.entity tr{border-bottom:1px solid var(--rule);}table.entity tr:last-child{border-bottom:none;}table.entity td{padding:5px 12px;}table.entity td:first-child{font-weight:600;}table.entity td:last-child{color:var(--ink-3);text-align:right;}table.entity tr[data-pk]{box-shadow:inset 3px 0 0 var(--accent);}table.entity tr[data-pk] td:first-child::before{content:"PK ";font:700 12px var(--mono);color:var(--accent);}table.entity tr[data-ref]{box-shadow:inset 3px 0 0 var(--ink-3);}table.entity tr[data-ref] td:first-child::before{content:"FK ";font:700 12px var(--mono);color:var(--ink-3);}table.entity tr.match{background:var(--sev-good-bg);}.erd .grid > table.entity.focus{box-shadow:0 0 0 2px var(--accent);}.erd .grid > table.entity.dim{opacity:.35;}@media (max-width:480px){.erd .grid{grid-template-columns:1fr;}}</style>
+<style data-component="explorer">.explorer{margin:20px 0;}.explorer script{display:none;}.exp-header .exp-count{margin:0 0 12px;font:13px var(--mono);color:var(--ink-3);}.exp-layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:20px;}.exp-facets{border-right:1px solid var(--rule);padding-right:16px;}.exp-facet-group{margin-bottom:18px;}.exp-facet-group h4{margin:0 0 6px;font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);}.exp-facet-group ul{list-style:none;margin:0;padding:0;max-height:220px;overflow-y:auto;}.exp-facet-group li{margin:2px 0;}.exp-facet-group label{display:flex;align-items:baseline;gap:4px;font:13px var(--sans);color:var(--ink-2);cursor:pointer;}.exp-count-badge{margin-left:auto;font:12px var(--mono);color:var(--ink-3);}.exp-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:12px;}.exp-tools input[type=search]{font:14px var(--sans);padding:5px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg-elev);color:var(--ink);min-width:0;flex:0 1 220px;}.exp-tools button{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.exp-histo{margin-bottom:12px;}.exp-histo svg{display:block;width:100%;height:48px;}.exp-histo-bar{fill:var(--accent);}.exp-table{width:100%;}.exp-table thead th{cursor:pointer;user-select:none;position:sticky;top:0;background:var(--bg);}.exp-table th[aria-sort="ascending"]::after{content:" ↑";}.exp-table th[aria-sort="descending"]::after{content:" ↓";}.exp-table tbody tr:not(.exp-detail-row){cursor:pointer;}.exp-detail-row td{background:var(--bg-sunken);padding:10px 12px;}.exp-detail{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;}.exp-detail dt{font:600 12px var(--mono);color:var(--ink-3);}.exp-detail dd{margin:0;}.exp-pager{display:flex;align-items:center;gap:10px;margin-top:10px;font:13px var(--sans);color:var(--ink-2);}.exp-pager button{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.exp-pager button:disabled{opacity:.4;cursor:default;}@media (max-width:700px){.exp-layout{grid-template-columns:minmax(0,1fr);}.exp-facets{border-right:0;border-bottom:1px solid var(--rule);padding-right:0;padding-bottom:12px;display:flex;flex-wrap:wrap;gap:0 24px;}.exp-facet-group{flex:1 1 160px;}}</style>
+<style data-component="mindmap">ul.mindmap,ul.mindmap ul{list-style:none;margin:0;padding:0;}ul.mindmap{margin:20px 0;font:14px var(--sans);}ul.mindmap ul{margin-left:24px;padding-left:20px;border-left:1.5px solid var(--rule-strong);}ul.mindmap li{position:relative;margin:2px 0;}ul.mindmap li::before{content:"";position:absolute;left:-20px;top:16px;width:20px;height:1.5px;background:var(--rule-strong);}ul.mindmap > li::before{display:none;}ul.mindmap .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:30px;}ul.mindmap .toggle{flex:none;width:18px;height:18px;border:none;background:none;color:var(--ink-3);cursor:pointer;font:12px var(--mono);padding:0;}ul.mindmap .toggle[hidden]{visibility:hidden;}ul.mindmap .label{padding:4px 8px;border-radius:6px;outline:none;min-width:32px;overflow-wrap:anywhere;}ul.mindmap .label:focus{box-shadow:0 0 0 2px var(--accent);}ul.mindmap .label[contenteditable="true"]{background:var(--bg-elev);box-shadow:0 0 0 2px var(--accent);cursor:text;}ul.mindmap .controls{display:flex;flex-wrap:wrap;gap:4px;margin-left:4px;}ul.mindmap .controls button{font:12px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}ul.mindmap li[data-tone="keep"] > .row .label{box-shadow:inset 3px 0 0 var(--sev-good);}ul.mindmap li[data-tone="maybe"] > .row .label{box-shadow:inset 3px 0 0 var(--sev-q);}ul.mindmap li[data-tone="drop"] > .row .label{opacity:.55;box-shadow:inset 3px 0 0 var(--sev-crit);text-decoration:line-through;}.mindmap-tools{display:flex;gap:8px;margin:0 0 10px;}.mindmap-tools button{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.mindmap-tools button:disabled{opacity:.4;cursor:default;}@media (max-width:480px){ul.mindmap ul{margin-left:14px;padding-left:12px;}}</style>
+<style data-component="playground">.playground{display:grid;gap:10px;margin:20px 0;padding:16px;max-width:480px;border:1px solid var(--rule);border-radius:8px;background:var(--bg-elev);}.playground label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:13px var(--sans);color:var(--ink-2);}.playground label.changed{color:var(--accent);}.playground input[type="range"]{flex:1 1 120px;accent-color:var(--accent);}.playground select{font:13px var(--sans);padding:3px 6px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg);color:var(--ink);}.playground .readout{font:12px var(--mono);color:var(--ink-3);min-width:3em;text-align:right;}.playground label.changed .readout{color:var(--accent);}.playground button{font:12px var(--mono);padding:4px 12px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg);color:var(--ink-2);cursor:pointer;}</style>
+<style data-component="table">.table-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:16px 0 -8px;}.table-tools input[type=search]{font:14px var(--sans);padding:5px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg-elev);color:var(--ink);min-width:0;flex:0 1 220px;}.table-tools .count{font:12px var(--mono);color:var(--ink-3);}.table-tools button{font:12px var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}table[data-sortable] th{cursor:pointer;user-select:none;}table[data-sortable] th[aria-sort="ascending"]::after{content:" ↑";}table[data-sortable] th[aria-sort="descending"]::after{content:" ↓";}table[data-sortable] thead th{position:sticky;top:0;background:var(--bg);}.matrix th input[type=range]{display:block;width:100%;max-width:110px;margin:4px 0 0 auto;accent-color:var(--accent);}.matrix th .weight{display:block;font-weight:400;text-transform:none;letter-spacing:0;}.matrix td.total{font-weight:700;}.matrix tr.win td{background:var(--sev-good-bg);}.matrix tr.win td:first-child{font-weight:600;}p.verdict{margin:8px 0 16px;padding:8px 12px;border-left:3px solid var(--sev-good);background:var(--sev-good-bg);border-radius:0 6px 6px 0;max-width:80ch;}</style>
+<style data-component="testplan">.testplan{margin:20px 0;}.tp-toolbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:8px;}.tp-toolbar input[type=search]{font:14px var(--sans);padding:5px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg-elev);color:var(--ink);min-width:0;flex:0 1 220px;}.tp-toolbar label{font:13px var(--sans);color:var(--ink-2);display:flex;align-items:center;gap:6px;}.tp-progress{position:sticky;top:0;z-index:4;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--rule);margin-bottom:16px;}.tp-bar{display:flex;width:100%;height:8px;border-radius:4px;overflow:hidden;background:var(--bg-sunken);}.tp-bar-sm{height:6px;margin-top:4px;}.tp-fill{display:block;height:100%;}.tp-fill.tp-pass{background:var(--sev-good);}.tp-fill.tp-fail{background:var(--sev-crit);}.tp-fill.tp-blocked{background:var(--sev-high);}.tp-fill.tp-skipped{background:var(--ink-4);}.tp-summary{margin:6px 0 0;font:12px var(--mono);color:var(--ink-3);}.tp-flow{padding:16px 0;border-top:1px solid var(--rule);}.tp-flow:first-child{border-top:0;padding-top:0;}.tp-flow-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}.tp-flow-title{margin:0;font:600 14px var(--sans);color:var(--ink);}.tp-flow-summary{font:12px var(--mono);color:var(--ink-3);}.tp-step{margin:12px 0;padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--bg-elev);max-width:72ch;}.tp-step[data-status="pass"]{background:var(--sev-good-bg);border-color:var(--sev-good);}.tp-step[data-status="fail"]{background:var(--sev-crit-bg);border-color:var(--sev-crit);}.tp-step[data-status="blocked"]{background:var(--sev-high-bg);border-color:var(--sev-high);}.tp-step[data-status="skipped"]{background:var(--bg-sunken);}.tp-step.tp-current{outline:2px solid var(--accent);outline-offset:2px;}.tp-step dl{margin:0;}.tp-step dt{font:600 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin:10px 0 0;}.tp-step dt:first-child{margin-top:0;}.tp-step dd{margin:2px 0 0;}.tp-step[hidden]{display:none;}.tp-control{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}.tp-control button{font:12px var(--mono);padding:4px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg);color:var(--ink-2);cursor:pointer;}.tp-control button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600;}.tp-notes{display:block;width:100%;margin-top:10px;font:13px var(--sans);padding:8px 10px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg);color:var(--ink);resize:vertical;min-height:44px;}@media (max-width:480px){.tp-flow-head{flex-direction:column;align-items:flex-start;}}</style>
+<style data-component="timeline">.timeline{list-style:none;margin:20px 0;padding:0;}main .timeline > li{position:relative;display:grid;grid-template-columns:76px 18px minmax(0,1fr);column-gap:10px;max-width:80ch;margin:0;padding:0 0 16px;}.timeline > li::before{content:"";grid-column:2;grid-row:1 / span 9;justify-self:center;width:12px;height:12px;margin-top:6px;border-radius:50%;border:2px solid var(--tone,var(--ink-3));background:var(--tone-bg,var(--bg));z-index:1;}.timeline > li[data-tone]::before{background:var(--tone);}.timeline > li::after{content:"";position:absolute;left:94px;top:20px;bottom:-2px;border-left:1px solid var(--rule-strong);}.timeline > li:last-child::after{display:none;}.timeline > li > time{grid-column:1;grid-row:1;padding-top:1px;font:600 13px/1.6 var(--mono);text-align:right;color:var(--tone,var(--ink-3));}.timeline > li > :not(time){grid-column:3;}.stepper{list-style:none;counter-reset:step;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px;margin:28px 0 20px;padding:0;}main .stepper > li{counter-increment:step;position:relative;max-width:none;margin:0;padding:22px 0 0;border-top:2px solid var(--tone,var(--rule-strong));font-size:14px;color:var(--ink-2);}.stepper > li::before{content:counter(step);position:absolute;top:-15px;left:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 13px var(--mono);color:var(--tone,var(--ink));background:var(--bg);border:2px solid var(--tone,var(--ink-3));}.stepper > li > b{display:block;color:var(--ink);font-size:15px;}@media (max-width:700px){.stepper{grid-auto-flow:row;gap:20px;padding-left:14px;border-left:2px solid var(--rule-strong);}main .stepper > li{border-top:0;padding:2px 0 0 26px;}.stepper > li::before{top:0;left:-29px;}}.roadmap{position:relative;margin:20px 0;overflow-x:auto;font-size:13px;}.roadmap .inner{position:relative;min-width:560px;}.roadmap .axis{display:grid;margin-left:110px;border-bottom:1px solid var(--rule-strong);font:12px var(--mono);color:var(--ink-3);}.roadmap .axis span{padding:0 0 4px 4px;border-left:1px solid var(--rule);}.roadmap .lane{position:relative;display:block;height:40px;margin-left:110px;border-bottom:1px solid var(--rule);}.roadmap .lane::before{content:attr(data-name);position:absolute;right:calc(100% + 10px);top:11px;width:100px;text-align:right;font-weight:600;color:var(--ink-2);}.roadmap .lane > span{position:absolute;top:7px;height:26px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:12px/24px var(--sans);border-radius:5px;color:var(--tone,var(--ink-2));background:var(--tone-bg,var(--bg-sunken));border:1px solid var(--tone,var(--rule-strong));}.roadmap .lane > span[data-status="planned"]{background:none;border-style:dashed;}.roadmap .today{position:absolute;top:0;bottom:0;border-left:2px solid var(--sev-crit);pointer-events:none;}.roadmap .today::after{content:"today";position:absolute;top:-2px;left:4px;font:600 12px var(--mono);color:var(--sev-crit);background:var(--bg);padding:0 3px;}</style>
+<style data-component="variants">.variants{display:grid;grid-template-columns:1fr;gap:16px;margin:20px 0;}@media (min-width:560px){.variants{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (min-width:860px){.variants{grid-template-columns:repeat(3,minmax(0,1fr));}}@media (min-width:1150px){.variants{grid-template-columns:repeat(4,minmax(0,1fr));}}.variants.comparing{grid-template-columns:repeat(2,minmax(0,1fr));}main .variant{margin:0;max-width:none;padding:16px;border:1px solid var(--rule);border-radius:8px;background:var(--bg-elev);}.variant h3{margin:0 0 8px;font:600 16px/1.3 var(--sans);}.variant.picked{outline:2px solid var(--accent);outline-offset:2px;}.variant.shortlisted{border-color:var(--sev-good);}.variant.rejected{opacity:.5;}.variant-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0;}.variant-toolbar button{font:12px var(--mono);padding:4px 10px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.variant-toolbar button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}.variant-notes{display:block;margin:10px 0 0;font:12px var(--mono);color:var(--ink-3);}.variant-notes textarea{display:block;width:100%;margin-top:4px;padding:6px 8px;font:13px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;resize:vertical;}.variants-tools{display:flex;align-items:center;gap:10px;margin:16px 0 -4px;}.variants-tools button{font:12px var(--mono);padding:4px 12px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--bg-elev);color:var(--ink-2);cursor:pointer;}.variants-tools button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}.variants-hint{margin:0;font:12px var(--mono);color:var(--ink-3);}</style>
+</head>
+<body>
+<header class="masthead">
+  <p class="eyebrow">Design doc · Public API · 2026-10-19 · tour of html-artifact v2</p>
+  <h1>Rate-limit each API key with a token bucket in Redis.</h1>
+  <p class="lede">Two customers caused 80% of throttled traffic last month, and today's only limit is a global 5,000 requests per second. A per-key bucket of 100 rps with a burst of 300 isolates them, and costs one Redis round trip per request.</p>
+</header>
+<div class="page"><nav class="toc"></nav><main>
+
+<section id="start">
+  <p class="eyebrow">01 · Start here</p>
+  <h2>Every block on this page is a v2 component.</h2>
+  <aside class="callout" data-tone="q"><b>Try the review loop.</b> Select any sentence and press + Comment, or mark it for deletion or replacement. Tick "Reviewed" on a section. Answer the decisions in section 02. Then open <b>Review</b> at the bottom right and press <b>Send to Claude</b>. It goes straight into the Claude session that built this page.</aside>
+  <dl class="stats">
+    <div data-tone="crit"><dt>Throttled traffic from two keys</dt><dd>80%</dd></div>
+    <div><dt>Global limit today</dt><dd>5,000 rps</dd></div>
+    <div data-tone="good"><dt>Proposed per-key rate</dt><dd>100 rps</dd></div>
+    <div><dt>Burst allowance</dt><dd>300</dd></div>
+  </dl>
+  <p>The page is one self-contained file. The agent wrote about 20 KB of plain HTML, and <code>build.mjs</code> inlined only the components that HTML uses. It works offline, in dark mode (try the Theme button), and on a phone.</p>
+</section>
+
+<section id="decisions">
+  <p class="eyebrow">02 · Decisions</p>
+  <h2>Two calls the platform team needs to make.</h2>
+  <p>Each block marks the recommended answer. Send to Claude reports every block as <code>chosen</code>, <code>default kept</code> or <code>not opened</code>, so silence never reads as agreement.</p>
+  <div class="ask" data-id="redis-down" data-default="open">
+    <p><b>When Redis is unavailable, the limiter should…</b></p>
+    <label><input type="radio" name="redis-down" value="open"> Fail open, and allow traffic under the global limit only</label>
+    <label><input type="radio" name="redis-down" value="closed"> Fail closed, and return 503 until Redis recovers</label>
+  </div>
+  <div class="ask" data-id="internal-keys" data-default="exempt">
+    <p><b>Should internal service keys be exempt?</b></p>
+    <label><input type="radio" name="internal-keys" value="exempt"> Exempt them</label>
+    <label><input type="radio" name="internal-keys" value="limit"> Limit them like any customer key</label>
+  </div>
+</section>
+
+<section id="architecture">
+  <p class="eyebrow">03 · Architecture</p>
+  <h2>The limiter sits between auth and the handlers.</h2>
+  <figure class="flow"><ol>
+    <li>Client<small>SDK or browser</small></li>
+    <li data-label="HTTPS">Edge proxy<small>global 5k rps</small></li>
+    <li data-label="key">Auth<small>resolves the API key</small></li>
+    <li data-label="per key" data-tone="low">Rate limiter<small>token bucket</small></li>
+    <li data-label="allowed">Handlers<small>unchanged</small></li>
+  </ol><figcaption>The request path. Only the limiter is new.</figcaption></figure>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 230" role="img" aria-label="The limiter, Redis, and the 429 path">
+      <g class="node" data-detail="Resolves the API key and attaches it to the request. Nothing changes here."><rect x="20" y="40" width="150" height="56" rx="6"/><text x="95" y="68">auth</text></g>
+      <g class="node hot" data-detail="Takes one token from the key's bucket. 100 tokens refill per second, and the bucket holds at most 300."><rect x="255" y="40" width="150" height="56" rx="6"/><text x="330" y="68">rate limiter</text></g>
+      <g class="node" data-detail="Unchanged API handlers."><rect x="490" y="40" width="150" height="56" rx="6"/><text x="565" y="68">handlers</text></g>
+      <g class="node store" data-detail="One key per API key: tokens and the last refill time, written with a Lua script so the update is atomic."><path d="M260,160 a70,10 0 0 1 140,0 v40 a70,10 0 0 1 -140,0 z"/><text x="330" y="190">Redis</text></g>
+      <g class="node problem" data-detail="Returned with Retry-After set to the seconds until one token refills."><rect x="490" y="150" width="150" height="56" rx="6"/><text x="565" y="178">429 response</text></g>
+      <path class="edge" d="M170,68 L253,68"/>
+      <path class="edge hot" d="M405,68 L488,68"/>
+      <path class="edge" d="M330,96 L330,148"/>
+      <path class="edge problem" d="M405,90 L488,165"/>
+      <g class="label"><rect x="180" y="46" width="64" height="18"/><text x="212" y="55">request</text></g>
+      <g class="label"><rect x="410" y="46" width="72" height="18"/><text x="446" y="55">allowed</text></g>
+      <g class="label"><rect x="338" y="113" width="92" height="18"/><text x="384" y="122">EVALSHA</text></g>
+      <g class="label"><rect x="408" y="126" width="64" height="18"/><text x="440" y="135">empty</text></g>
+    </svg>
+    <figcaption>Click any box for what it does. The accent edge is the happy path, and the red edge is the throttle path.</figcaption>
+  </figure>
+</section>
+
+<section id="rollout">
+  <p class="eyebrow">04 · Rollout</p>
+  <h2>Shadow mode first, then enforce per plan.</h2>
+  <ol class="stepper">
+    <li><b>Shadow</b> count, don't block</li>
+    <li data-tone="low"><b>Enforce for free keys</b> 100 rps</li>
+    <li data-tone="low"><b>Enforce for paid keys</b> per-plan limits</li>
+    <li data-tone="good"><b>Remove global cap</b> edge stays as backstop</li>
+  </ol>
+  <div class="roadmap" data-start="2026-10-01" data-end="2027-01-31" data-today="2026-10-19">
+    <div class="lane" data-name="Platform">
+      <span data-start="2026-10-01" data-end="2026-10-25" data-tone="good">Limiter core</span>
+      <span data-start="2026-10-26" data-end="2026-11-20" data-tone="high">Shadow mode</span>
+    </div>
+    <div class="lane" data-name="API">
+      <span data-start="2026-11-15" data-end="2026-12-15" data-tone="low">429 + Retry-After</span>
+      <span data-start="2026-12-16" data-end="2027-01-25" data-status="planned">Per-plan limits</span>
+    </div>
+  </div>
+  <ol class="timeline">
+    <li data-tone="crit"><time>Sep 12</time> Two keys exhaust the global limit for 40 minutes.</li>
+    <li><time>Sep 20</time> The incident review asks for per-key limits.</li>
+    <li data-tone="good"><time>Oct 19</time> This design goes out for review.</li>
+  </ol>
+</section>
+
+<section id="options">
+  <p class="eyebrow">05 · Alternatives</p>
+  <h2>A token bucket beats fixed windows on bursts.</h2>
+  <p>Drag a weight and the totals and winner update live.</p>
+  <table class="matrix">
+    <thead><tr><th>Option</th><th class="num" data-weight="5">Burst safety</th><th class="num" data-weight="3">Simplicity</th><th class="num" data-weight="4">Per-key data</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      <tr><td>Token bucket in Redis</td><td class="num">9</td><td class="num">6</td><td class="num">9</td><td class="num total"></td></tr>
+      <tr><td>Fixed-window counters</td><td class="num">4</td><td class="num">9</td><td class="num">9</td><td class="num total"></td></tr>
+      <tr><td>Limits in the edge proxy</td><td class="num">7</td><td class="num">8</td><td class="num">2</td><td class="num total"></td></tr>
+    </tbody>
+  </table>
+  <p class="verdict"></p>
+  <p>Last month's throttled keys, sortable and filterable:</p>
+  <table data-sortable>
+    <thead><tr><th>Key</th><th>Plan</th><th class="num">Throttled requests</th><th class="num">Share</th></tr></thead>
+    <tbody>
+      <tr><td>key_acme_prod</td><td>Free</td><td class="num">1,204,000</td><td class="num">52%</td></tr>
+      <tr><td>key_globex_batch</td><td>Pro</td><td class="num">648,000</td><td class="num">28%</td></tr>
+      <tr><td>key_initech_web</td><td>Pro</td><td class="num">231,000</td><td class="num">10%</td></tr>
+      <tr><td>key_umbrella_etl</td><td>Enterprise</td><td class="num">139,000</td><td class="num">6%</td></tr>
+      <tr><td>other keys</td><td>—</td><td class="num">92,000</td><td class="num">4%</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="review">
+  <p class="eyebrow">06 · Code review</p>
+  <h2>The limiter PR: one blocking issue.</h2>
+  <dl class="stats">
+    <div data-tone="crit"><dt>Blocking</dt><dd>1</dd></div>
+    <div data-tone="q"><dt>Questions</dt><dd>1</dd></div>
+    <div data-tone="nit"><dt>Nits</dt><dd>1</dd></div>
+  </dl>
+  <ol class="ranked">
+    <li><label><input type="checkbox"> <b>F1:</b> the refill uses wall-clock time from the API host.</label><small>Clock skew between hosts lets a key refill early. Blocking.</small></li>
+    <li><label><input type="checkbox"> <b>F2:</b> what happens on a Lua script cache miss?</label><small>A NOSCRIPT error after a Redis failover would fail every request.</small></li>
+  </ol>
+  <table class="findings">
+    <thead><tr><th>ID</th><th>Severity</th><th>Where</th><th>Finding</th></tr></thead>
+    <tbody>
+      <tr data-tone="crit"><td><a href="#F1">F1</a></td><td>issue · blocking</td><td><code>limiter/bucket.py:22</code></td><td>Refill time comes from the host clock.</td></tr>
+      <tr data-tone="q"><td><a href="#F2">F2</a></td><td>question</td><td><code>limiter/bucket.py:31</code></td><td>NOSCRIPT after failover is unhandled.</td></tr>
+      <tr data-tone="nit"><td><a href="#F3">F3</a></td><td>nit</td><td><code>limiter/config.py:4</code></td><td>Name the burst constant.</td></tr>
+    </tbody>
+  </table>
+  <ol class="risk">
+    <li data-tone="crit" style="--w:85"><code>limiter/bucket.py</code> runs on every request</li>
+    <li data-tone="good" style="--w:15"><code>limiter/config.py</code> two constants</li>
+  </ol>
+  <div class="annotated" data-file="limiter/bucket.py">
+<pre class="diff"><code>@@ -18,8 +18,12 @@ def take(key: str) -> bool:
+     bucket = redis.hgetall(key)
+-    now = time.time()
++    now = time.time()                        ⟦F1⟧
++    tokens = min(BURST, bucket.tokens + (now - bucket.ts) * RATE)
++    if tokens &lt; 1:
++        return False
+     redis.evalsha(TAKE_SHA, 1, key, now)     ⟦F2⟧
+     return True</code></pre>
+    <ol class="notes">
+      <li id="F1" data-tone="crit"><b>issue · blocking</b> Use Redis <code>TIME</code> inside the script, so every host refills from one clock.</li>
+      <li id="F2" data-tone="q"><b>question</b> After a failover the script cache is empty. Catch NOSCRIPT and fall back to <code>EVAL</code>.</li>
+    </ol>
+  </div>
+  <div class="annotated" data-file="limiter/config.py">
+<pre class="diff"><code>@@ -1,4 +1,5 @@
+ RATE = 100
+-LIMIT = 300
++BURST = 300                                  ⟦F3⟧</code></pre>
+    <ol class="notes"><li id="F3" data-tone="nit"><b>nit</b> Say what bounds it: <code>MAX_BURST_TOKENS</code>.</li></ol>
+  </div>
+</section>
+
+<section id="testplan">
+  <p class="eyebrow">07 · Test plan</p>
+  <h2>Verify the limiter before enforcing.</h2>
+  <div class="testplan" data-id="limiter">
+    <section class="tp-flow" data-title="A key hits its limit" data-minutes="5">
+      <div class="tp-step" data-id="f1-s1"><dl>
+        <dt>Action</dt><dd>Send 320 requests in one second with <code>hey -n 320 -c 50 $API/ping</code>.</dd>
+        <dt>Pass</dt><dd>About 300 succeed and the rest return 429 with <code>Retry-After</code>.</dd>
+        <dt>Watch</dt><dd>All 200s means the limiter is failing open.</dd></dl></div>
+      <div class="tp-step" data-id="f1-s2"><dl>
+        <dt>Action</dt><dd>Wait one second and send 100 more.</dd>
+        <dt>Pass</dt><dd>All 100 succeed, because the bucket refilled.</dd>
+        <dt>Watch</dt><dd>429s here mean the refill is too slow.</dd></dl></div>
+    </section>
+    <section class="tp-flow" data-title="Redis goes away" data-minutes="10">
+      <div class="tp-step" data-id="f2-s1"><dl>
+        <dt>Action</dt><dd>Stop the Redis replica in staging, then send traffic.</dd>
+        <dt>Pass</dt><dd>Requests keep succeeding under the global cap.</dd>
+        <dt>Watch</dt><dd>503s mean the limiter failed closed.</dd></dl></div>
+    </section>
+  </div>
+</section>
+
+<section id="data">
+  <p class="eyebrow">08 · Data</p>
+  <h2>Throttle events from the last week.</h2>
+  <div class="explorer" data-id="throttles" data-facets="plan,region" data-time="day">
+    <script type="application/json">[
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-12","throttled":41200},
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-13","throttled":38900},
+      {"key":"key_globex_batch","plan":"Pro","region":"EU","day":"2026-10-13","throttled":22100},
+      {"key":"key_initech_web","plan":"Pro","region":"US","day":"2026-10-14","throttled":9100},
+      {"key":"key_umbrella_etl","plan":"Enterprise","region":"EU","day":"2026-10-15","throttled":5400},
+      {"key":"key_globex_batch","plan":"Pro","region":"EU","day":"2026-10-16","throttled":24800},
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-17","throttled":44100},
+      {"key":"key_hooli_api","plan":"Free","region":"APAC","day":"2026-10-18","throttled":3100}
+    ]</script>
+    <p>Eight daily rows from the edge logs, embedded in the page.</p>
+  </div>
+</section>
+
+<section id="schema">
+  <p class="eyebrow">09 · Schema</p>
+  <h2>Where limits are configured.</h2>
+  <div class="erd" data-id="limits">
+    <table class="entity" data-name="plans"><caption>plans</caption>
+      <tr data-col="id" data-pk><td>id</td><td>text</td></tr>
+      <tr data-col="rate"><td>rate</td><td>int</td></tr>
+      <tr data-col="burst"><td>burst</td><td>int</td></tr>
+    </table>
+    <table class="entity" data-name="api_keys"><caption>api_keys</caption>
+      <tr data-col="id" data-pk><td>id</td><td>text</td></tr>
+      <tr data-col="plan_id" data-ref="plans.id"><td>plan_id</td><td>text</td></tr>
+      <tr data-col="org_id" data-ref="orgs.id"><td>org_id</td><td>uuid</td></tr>
+    </table>
+    <table class="entity" data-name="orgs"><caption>orgs</caption>
+      <tr data-col="id" data-pk><td>id</td><td>uuid</td></tr>
+      <tr data-col="name"><td>name</td><td>text</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="ideas">
+  <p class="eyebrow">10 · Ideas</p>
+  <h2>What else limits could do.</h2>
+  <ul class="mindmap" data-id="ideas">
+    <li>Rate limits
+      <ul>
+        <li data-tone="keep">Per-plan limits
+          <ul><li>Read from plans table</li><li data-tone="maybe">Burst credits for annual plans</li></ul>
+        </li>
+        <li data-tone="maybe">Customer dashboard of throttles</li>
+        <li data-tone="drop">Limits per endpoint</li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<section id="variants">
+  <p class="eyebrow">11 · Variants</p>
+  <h2>Three ways to tell a customer they're throttled.</h2>
+  <div class="variants" data-id="messaging">
+    <article class="variant" data-id="a"><h3>Header only</h3><p><code>Retry-After: 2</code> and a bare 429.</p>
+      <ul class="pros"><li>Standard</li></ul><ul class="cons"><li>Silent in most SDK logs</li></ul></article>
+    <article class="variant" data-id="b"><h3>Header + JSON body</h3><p>Adds <code>{"error":"rate_limited","limit":100}</code>.</p>
+      <ul class="pros"><li>Self-explaining</li></ul><ul class="cons"><li>Clients must parse it</li></ul></article>
+    <article class="variant" data-id="c"><h3>Email on sustained throttling</h3><p>Emails the key owner after 10 minutes of 429s.</p>
+      <ul class="pros"><li>Reaches humans</li></ul><ul class="cons"><li>Noisy during incidents</li></ul></article>
+  </div>
+</section>
+
+<section id="tune">
+  <p class="eyebrow">12 · Tune</p>
+  <h2>Feel the throttle toast before you ship it.</h2>
+  <form class="playground" data-id="toast" data-target="#toast-preview">
+    <label>Duration <input type="range" name="duration" min="100" max="1000" value="300" data-unit="ms"></label>
+    <label>Lift <input type="range" name="lift" min="0" max="24" value="0" data-unit="px"></label>
+    <label>Easing <select name="easing"><option>ease-out</option><option>linear</option><option>cubic-bezier(.2,.9,.3,1.3)</option></select></label>
+    <button type="button" data-preset='{"duration":150,"lift":8}'>Snappy</button>
+    <button type="reset">Reset</button>
+  </form>
+  <div id="toast-preview"><span class="toast">Slow down: retry in 2s.</span></div>
+</section>
+
+<section id="triage">
+  <p class="eyebrow">13 · Triage</p>
+  <h2>Sort the follow-up tickets.</h2>
+  <ol class="editor-list" data-id="tickets" data-labels="must,should,later" data-tones="crit,high,nit">
+    <li data-id="RL-1">Use Redis TIME in the take script <small>F1</small></li>
+    <li data-id="RL-2">Handle NOSCRIPT after failover <small>F2</small></li>
+    <li data-id="RL-3">Shadow-mode dashboard <small>observability</small></li>
+    <li data-id="RL-4">Rename LIMIT to MAX_BURST_TOKENS <small>F3</small></li>
+  </ol>
+</section>
+
+<section id="followups">
+  <p class="eyebrow">14 · Follow-ups</p>
+  <h2>Why the last incident happened, and who does what.</h2>
+  <ol class="chain">
+    <li>A batch customer started a backfill with 50 parallel workers.</li>
+    <li data-tone="crit"><b>Defect.</b> Only a global limit exists, so one key could take the whole budget.</li>
+    <li>Every other customer saw 429s for 40 minutes.</li>
+  </ol>
+  <p>The fix <span class="claim" data-evidence="verified">isolates keys from each other</span>, and it <span class="claim" data-evidence="guess">should cut p99 latency during bursts</span>.</p>
+  <ul class="checklist">
+    <li><label><input type="checkbox"> Ship the limiter in shadow mode</label> <span class="owner">Dana · Oct 25</span></li>
+    <li><label><input type="checkbox"> Add a throttle-rate alert</label> <span class="owner">Ravi · Nov 1</span></li>
+    <li><label><input type="checkbox"> Email the top five throttled customers</label> <span class="owner">Mei · Nov 8</span></li>
+  </ul>
+  <div class="bar" role="img" aria-label="Share of throttled requests by key">
+    <span style="--v:52" data-tone="crit">acme 52%</span>
+    <span style="--v:28" data-tone="high">globex 28%</span>
+    <span style="--v:20">others 20%</span>
+  </div>
+</section>
+
+</main></div>
+<script type="application/json" data-component="sections">{"start":"01 · Start here Every block on this page is a v2 component. Try the review loop. Select any sentence and press + Comment, or mark it for deletion or replacement. Tick \"Reviewed\" on a section. Answer the decisions in section 02. Then open Review at the bottom right and press Send to Claude. It goes straight into the Claude session that built this page. Throttled traffic from two keys 80% Global limit today 5,000 rps Proposed per-key rate 100 rps Burst allowance 300 The page is one self-contained file. The agent wrote about 20 KB of plain HTML, and build.mjs inlined only the components that HTML uses. It works offline, in dark mode (try the Theme button), and on a phone.","decisions":"02 · Decisions Two calls the platform team needs to make. Each block marks the recommended answer. Send to Claude reports every block as chosen, default kept or not opened, so silence never reads as agreement. When Redis is unavailable, the limiter should… Fail open, and allow traffic under the global limit only Fail closed, and return 503 until Redis recovers Should internal service keys be exempt? Exempt them Limit them like any customer key","architecture":"03 · Architecture The limiter sits between auth and the handlers. Client SDK or browser Edge proxy global 5k rps Auth resolves the API key Rate limiter token bucket Handlers unchanged The request path. Only the limiter is new. auth rate limiter handlers Redis 429 response request allowed EVALSHA empty Click any box for what it does. The accent edge is the happy path, and the red edge is the throttle path.","rollout":"04 · Rollout Shadow mode first, then enforce per plan. Shadow count, don't block Enforce for free keys 100 rps Enforce for paid keys per-plan limits Remove global cap edge stays as backstop Limiter core Shadow mode 429 + Retry-After Per-plan limits Sep 12 Two keys exhaust the global limit for 40 minutes. Sep 20 The incident review asks for per-key limits. Oct 19 This design goes out for review.","options":"05 · Alternatives A token bucket beats fixed windows on bursts. Drag a weight and the totals and winner update live. Option Burst safety Simplicity Per-key data Total Token bucket in Redis 9 6 9 Fixed-window counters 4 9 9 Limits in the edge proxy 7 8 2 Last month's throttled keys, sortable and filterable: Key Plan Throttled requests Share key_acme_prod Free 1,204,000 52% key_globex_batch Pro 648,000 28% key_initech_web Pro 231,000 10% key_umbrella_etl Enterprise 139,000 6% other keys — 92,000 4%","review":"06 · Code review The limiter PR: one blocking issue. Blocking 1 Questions 1 Nits 1 F1: the refill uses wall-clock time from the API host. Clock skew between hosts lets a key refill early. Blocking. F2: what happens on a Lua script cache miss? A NOSCRIPT error after a Redis failover would fail every request. ID Severity Where Finding F1 issue · blocking limiter/bucket.py:22 Refill time comes from the host clock. F2 question limiter/bucket.py:31 NOSCRIPT after failover is unhandled. F3 nit limiter/config.py:4 Name the burst constant. limiter/bucket.py runs on every request limiter/config.py two constants @@ -18,8 +18,12 @@ def take(key: str) -> bool: bucket = redis.hgetall(key) - now = time.time() + now = time.time() ⟦F1⟧ + tokens = min(BURST, bucket.tokens + (now - bucket.ts) * RATE) + if tokens \u003c 1: + return False redis.evalsha(TAKE_SHA, 1, key, now) ⟦F2⟧ return True issue · blocking Use Redis TIME inside the script, so every host refills from one clock. question After a failover the script cache is empty. Catch NOSCRIPT and fall back to EVAL. @@ -1,4 +1,5 @@ RATE = 100 -LIMIT = 300 +BURST = 300 ⟦F3⟧ nit Say what bounds it: MAX_BURST_TOKENS.","testplan":"07 · Test plan Verify the limiter before enforcing. Action Send 320 requests in one second with hey -n 320 -c 50 $API/ping. Pass About 300 succeed and the rest return 429 with Retry-After. Watch All 200s means the limiter is failing open. Action Wait one second and send 100 more. Pass All 100 succeed, because the bucket refilled. Watch 429s here mean the refill is too slow.","data":"08 · Data Throttle events from the last week. Eight daily rows from the edge logs, embedded in the page.","schema":"09 · Schema Where limits are configured. plans id text rate int burst int api_keys id text plan_id text org_id uuid orgs id uuid name text","ideas":"10 · Ideas What else limits could do. Rate limits Per-plan limits Read from plans table Burst credits for annual plans Customer dashboard of throttles Limits per endpoint","variants":"11 · Variants Three ways to tell a customer they're throttled. Header only Retry-After: 2 and a bare 429. Standard Silent in most SDK logs Header + JSON body Adds {\"error\":\"rate_limited\",\"limit\":100}. Self-explaining Clients must parse it Email on sustained throttling Emails the key owner after 10 minutes of 429s. Reaches humans Noisy during incidents","tune":"12 · Tune Feel the throttle toast before you ship it. Duration Lift Easing ease-out linear cubic-bezier(.2,.9,.3,1.3) Snappy Reset Slow down: retry in 2s.","triage":"13 · Triage Sort the follow-up tickets. Use Redis TIME in the take script F1 Handle NOSCRIPT after failover F2 Shadow-mode dashboard observability Rename LIMIT to MAX_BURST_TOKENS F3","followups":"14 · Follow-ups Why the last incident happened, and who does what. A batch customer started a backfill with 50 parallel workers. Defect. Only a global limit exists, so one key could take the whole budget. Every other customer saw 429s for 40 minutes. The fix isolates keys from each other, and it should cut p99 latency during bursts. Ship the limiter in shadow mode Dana · Oct 25 Add a throttle-rate alert Ravi · Nov 1 Email the top five throttled customers Mei · Nov 8 acme 52% globex 28% others 20%"}</script>
+<script data-component="shell">(() => {
+const HA = (window.HA = window.HA || {});
+HA.store = {
+get(key, fallback = null) {
+try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); } catch { return fallback; }
+},
+set(key, value) {
+try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage blocked; state lives for this visit only */ }
+},
+};
+const blocks = new Map();
+const blockKey = name => `html-artifact:${location.pathname}:block:${name}`;
+HA.register = (name, block) => {
+blocks.set(name, block);
+const saved = HA.store.get(blockKey(name));
+if (saved !== null && block.restore) block.restore(saved);
+};
+HA.changed = name => { const b = blocks.get(name); if (b) HA.store.set(blockKey(name), b.state()); };
+HA.blocks = () => Object.fromEntries([...blocks].map(([name, b]) => [name, { state: b.state(), summary: b.summary ? b.summary() : null }]));
+const SCROLL = `html-artifact:scroll:${location.pathname}`;
+try {
+const y = sessionStorage.getItem(SCROLL);
+if (y !== null) { sessionStorage.removeItem(SCROLL); addEventListener('load', () => scrollTo(0, +y)); }
+} catch { /* storage blocked */ }
+const submit = window.__CLAUDE_SUBMIT_URL__;
+if (submit && 'EventSource' in window) {
+const events = new EventSource(submit.replace('/?', '/events?'));
+events.onmessage = e => {
+let data;
+try { data = JSON.parse(e.data); } catch { return; }
+if (data.type !== 'built' || data.path !== decodeURIComponent(location.pathname)) return;
+try { sessionStorage.setItem(SCROLL, String(scrollY)); } catch { /* storage blocked */ }
+location.reload();
+};
+}
+const root = document.documentElement;
+const THEME = 'html-artifact:theme';
+const saved = HA.store.get(THEME);
+if (saved) root.dataset.theme = saved;
+const toggle = document.querySelector('[data-theme-toggle]') || document.body.appendChild(Object.assign(
+document.createElement('button'), { type: 'button', textContent: 'Theme' }));
+toggle.setAttribute('data-theme-toggle', '');
+toggle.setAttribute('aria-label', 'Switch light or dark theme');
+toggle.addEventListener('click', () => {
+const dark = (root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+root.dataset.theme = dark ? 'light' : 'dark';
+HA.store.set(THEME, root.dataset.theme);
+});
+const toc = document.querySelector('nav.toc');
+const sections = [...document.querySelectorAll('main > section[id]')];
+if (toc && !toc.querySelector('a')) {
+for (const s of sections) {
+const a = document.createElement('a');
+a.href = `#${s.id}`;
+const eyebrow = s.querySelector('.eyebrow')?.textContent.replace(/^\s*[\d.]+\s*[·.:-]\s*/, '').trim();
+a.textContent = eyebrow || (s.querySelector('h2') || s).textContent.trim();
+toc.appendChild(a);
+}
+}
+if (toc && 'IntersectionObserver' in window) {
+const links = new Map([...toc.querySelectorAll('a[href^="#"]')].map(a => [a.getAttribute('href').slice(1), a]));
+const io = new IntersectionObserver(entries => {
+for (const e of entries) {
+if (!e.isIntersecting || !links.has(e.target.id)) continue;
+links.forEach(a => a.removeAttribute('aria-current'));
+links.get(e.target.id).setAttribute('aria-current', 'true');
+}
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => io.observe(s));
+}
+})();</script>
+<script data-component="review">(() => {
+const init = () => {
+performance.mark('ha:review-start');
+const HA = window.HA;
+const meta = name => document.querySelector(`meta[name="${name}"]`)?.content;
+const KEY = `html-artifact:${meta('artifact-id') || location.pathname}:review.v2`;
+const LABEL = meta('review-label') || 'Comments';
+const TONES = ['crit', 'low', 'q', 'good', 'nit', 'high', 'med'];
+const SEVS = (meta('review-severities') || 'Concern, Suggest, Question, Praise, Nit')
+.split(',').map(s => s.trim()).filter(Boolean)
+.map((label, i) => ({ id: label.toLowerCase().replace(/\W+/g, '-'), label, tone: TONES[i % TONES.length] }));
+const sevOf = id => SEVS.find(s => s.id === id) || SEVS[0];
+const QLABELS = (meta('review-labels') || 'needs a test: write a failing test before changing code | out of scope: remove this from the document | unclear: rewrite this so a newcomer understands it | needs evidence: back this claim with a source or mark it as a guess')
+.split('|').map(x => x.trim()).filter(Boolean)
+.map(x => { const i = x.indexOf(':'); return i < 0 ? { label: x, tip: '' } : { label: x.slice(0, i).trim(), tip: x.slice(i + 1).trim() }; });
+const KINDS = [['comment', 'Comment'], ['delete', 'Delete'], ['replace', 'Replace']];
+const GENERAL = '__general';
+const CONTEXT = 32;
+const state = HA.store.get(KEY, { reviewed: {}, comments: [] });
+const save = () => HA.store.set(KEY, state);
+const main = document.querySelector('main') || document.body;
+const sections = [...main.querySelectorAll(':scope > section[id]')];
+const toc = id => document.querySelector(`nav.toc a[href="#${CSS.escape(id)}"]`);
+const labelOf = sec => sec.querySelector('.eyebrow')?.textContent.replace(/^\s*[\d.]+\s*[·.:-]\s*/, '').trim()
+|| sec.querySelector('h2')?.textContent.trim() || sec.id;
+const h = (tag, props = {}, ...kids) => {
+const e = document.createElement(tag);
+for (const [k, v] of Object.entries(props)) k in e && k !== 'dataset' ? (e[k] = v) : e.setAttribute(k, v);
+e.append(...kids.filter(k => k !== null && k !== undefined));
+return e;
+};
+const textNodes = root => {
+const out = [];
+const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT,
+{ acceptNode: n => (n.parentElement.closest('.rv-ui, [data-ui]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+for (let n; (n = w.nextNode());) out.push(n);
+return out;
+};
+const collapse = raw => {
+let norm = '';
+const map = [];
+for (let i = 0; i < raw.length; i++) {
+const ws = /\s/.test(raw[i]);
+if (ws && norm.endsWith(' ')) continue;
+norm += ws ? ' ' : raw[i];
+map.push(i);
+}
+map.push(raw.length);
+return { norm, map };
+};
+const model = sec => {
+const nodes = textNodes(sec);
+const raw = nodes.map(n => n.textContent).join('');
+return { nodes, raw, ...collapse(raw) };
+};
+const offsetOf = (nodes, container, offset) => {
+const point = document.createRange();
+point.setStart(container, offset);
+let acc = 0;
+for (const n of nodes) {
+if (n === container) return acc + offset;
+if (point.comparePoint(n, 0) === 1) return acc;
+acc += n.length;
+}
+return acc;
+};
+const common = (a, b, fromEnd) => {
+let k = 0;
+while (k < a.length && k < b.length && (fromEnd ? a[a.length - 1 - k] === b[b.length - 1 - k] : a[k] === b[k])) k++;
+return k;
+};
+const locate = (norm, a) => {
+const exact = norm.indexOf(a.prefix + a.text + a.suffix);
+if (exact >= 0) return exact + a.prefix.length;
+let best = -1, bestScore = -1;
+for (let i = norm.indexOf(a.text); i >= 0; i = norm.indexOf(a.text, i + 1)) {
+const score = common(norm.slice(0, i), a.prefix, true) + common(norm.slice(i + a.text.length), a.suffix, false);
+if (score > bestScore) [best, bestScore] = [i, score];
+}
+return best;
+};
+const wrap = (nodes, start, end, make) => {
+let acc = 0;
+for (const n of nodes) {
+const ns = acc;
+acc += n.length;
+if (acc <= start || ns >= end) continue;
+const a = Math.max(start, ns) - ns, b = Math.min(end, acc) - ns;
+if (!n.textContent.slice(a, b).trim()) continue;
+let node = n;
+if (a > 0) node = node.splitText(a);
+if (b - a < node.length) node.splitText(b - a);
+const m = make();
+node.replaceWith(m);
+m.appendChild(node);
+}
+};
+const isCodeReview = !!document.querySelector('.annotated, pre.diff');
+const label = c => (c.kind === 'delete' ? 'Delete' : c.kind === 'replace' ? 'Replace' : sevOf(c.sev).label + (c.blocking ? ' · blocking' : ''));
+const editor = ({ sev = SEVS[0].id, body = '', blocking = false, suggestion = '', code = false, anchored = false,
+kind = 'comment', replacement = '', qlabel = null, onSave, onCancel, onDelete }) => {
+let chosen = sev;
+const pills = h('div', { className: 'rv-sevs', role: 'radiogroup', 'aria-label': 'Severity' },
+...SEVS.map(s => h('button', { type: 'button', className: 'rv-pill', 'data-sev': s.id, 'data-tone': s.tone,
+'aria-pressed': String(s.id === sev), textContent: s.label })));
+pills.addEventListener('click', e => {
+const b = e.target.closest('[data-sev]');
+if (!b) return;
+chosen = b.dataset.sev;
+pills.querySelectorAll('[data-sev]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+});
+const text = h('textarea', { rows: 3, placeholder: 'Comment (Markdown is fine)', 'aria-label': 'Comment' });
+text.value = body;
+let chosenKind = kind;
+const repl = h('textarea', { rows: 2, className: 'rv-replacement', placeholder: 'Replace with…', 'aria-label': 'Replacement text', hidden: kind !== 'replace' });
+repl.value = replacement;
+const kinds = anchored ? h('div', { className: 'rv-kinds', role: 'group', 'aria-label': 'Annotation type' },
+...KINDS.map(([k, l]) => h('button', { type: 'button', className: 'rv-kind', 'data-kind': k, 'aria-pressed': String(k === kind), textContent: l }))) : null;
+kinds?.addEventListener('click', e => {
+const b = e.target.closest('[data-kind]');
+if (!b) return;
+chosenKind = b.dataset.kind;
+kinds.querySelectorAll('[data-kind]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+repl.hidden = chosenKind !== 'replace';
+});
+let chosenLabel = qlabel;
+const qrow = QLABELS.length ? h('div', { className: 'rv-qlabels', role: 'group', 'aria-label': 'Quick labels' },
+...QLABELS.map(q => h('button', { type: 'button', className: 'rv-qlabel', 'aria-pressed': String(q.label === qlabel?.label), textContent: q.label }))) : null;
+qrow?.addEventListener('click', e => {
+const b = e.target.closest('.rv-qlabel');
+if (!b) return;
+const q = QLABELS.find(x => x.label === b.textContent);
+chosenLabel = chosenLabel?.label === q.label ? null : q;
+qrow.querySelectorAll('.rv-qlabel').forEach(x => x.setAttribute('aria-pressed', String(x.textContent === chosenLabel?.label)));
+});
+const block = isCodeReview ? h('input', { type: 'checkbox', className: 'rv-blocking', checked: blocking }) : null;
+const sug = code ? h('textarea', { rows: 2, className: 'rv-suggestion', placeholder: 'Suggested code (optional)', 'aria-label': 'Suggested code' }) : null;
+if (sug) sug.value = suggestion;
+const fields = () => ({ sev: chosen, body: text.value.trim(),
+...(block ? { blocking: block.checked } : {}), ...(sug ? { suggestion: sug.value.replace(/\s+$/, '') } : {}),
+...(anchored ? { kind: chosenKind } : {}), ...(chosenKind === 'replace' ? { replacement: repl.value.trim() } : {}),
+label: chosenLabel?.label || null, tip: chosenLabel?.tip || null });
+const form = h('div', { className: 'rv-editor' }, kinds, pills, qrow, text, repl, sug,
+block ? h('label', { className: 'rv-inline' }, block, ' blocking') : null, h('div', { className: 'rv-actions' },
+h('button', { type: 'button', className: 'rv-btn rv-primary', 'data-action': 'save', textContent: 'Save' }),
+h('button', { type: 'button', className: 'rv-btn', 'data-action': 'cancel', textContent: 'Cancel' }),
+onDelete ? h('button', { type: 'button', className: 'rv-btn rv-danger', 'data-action': 'delete', textContent: 'Delete' }) : null));
+form.addEventListener('click', e => {
+const act = e.target.closest('[data-action]')?.dataset.action;
+if (act === 'save') onSave(fields());
+if (act === 'cancel') onCancel();
+if (act === 'delete') onDelete();
+});
+form.addEventListener('keydown', e => {
+if (e.key === 'Escape') onCancel();
+if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onSave(fields());
+});
+setTimeout(() => text.focus(), 0);
+return form;
+};
+const card = c => {
+const s = sevOf(c.sev);
+const el = h('div', { className: `rv-card${c.outdated ? ' rv-outdated' : ''}${c.addressed ? ' rv-addressed' : ''}`, 'data-tone': s.tone, 'data-id': c.id },
+h('div', { className: 'rv-card-head' },
+h('span', { className: 'rv-badge', 'data-tone': s.tone, textContent: label(c) }),
+c.outdated ? h('span', { className: 'rv-badge rv-flag', textContent: 'outdated', title: 'The highlighted text is no longer on the page' }) : null,
+h('span', { className: 'rv-spacer' }),
+c.anchor && !c.outdated ? h('button', { type: 'button', className: 'rv-link', 'data-action': 'jump', textContent: 'Jump' }) : null,
+h('button', { type: 'button', className: 'rv-link', 'data-action': 'edit', textContent: 'Edit' }),
+h('label', { className: 'rv-link' }, h('input', { type: 'checkbox', 'data-action': 'addressed', checked: !!c.addressed }), ' Done')),
+c.anchor ? h('blockquote', { className: 'rv-quote', textContent: c.anchor.text }) : null,
+c.body ? h('div', { className: 'rv-body', textContent: c.body }) : null,
+c.suggestion ? h('pre', { className: 'rv-suggested' }, h('code', { textContent: c.suggestion })) : null,
+c.kind === 'replace' ? h('div', { className: 'rv-body' }, h('b', { textContent: 'Replace with: ' }), c.replacement || '') : null,
+c.label ? h('span', { className: 'rv-badge rv-flag', textContent: c.label }) : null);
+return el;
+};
+const render = () => {
+for (const sec of sections) {
+sec.querySelectorAll('mark.rv-mark').forEach(m => m.replaceWith(...m.childNodes));
+sec.normalize();
+const mine = state.comments.filter(c => c.sectionId === sec.id);
+for (const c of mine.filter(c => c.anchor)) {
+const m = model(sec);
+const at = locate(m.norm, c.anchor);
+c.outdated = at < 0;
+if (at < 0) continue;
+wrap(m.nodes, m.map[at], m.map[at + c.anchor.text.length - 1] + 1, () =>
+h('mark', { className: 'rv-mark', 'data-tone': sevOf(c.sev).tone, 'data-kind': c.kind || 'comment', 'data-id': c.id, tabIndex: 0 }));
+}
+const cards = sec.querySelector(':scope > .rv-cards');
+cards.replaceChildren(...mine.map(card));
+const done = !!state.reviewed[sec.id];
+sec.classList.toggle('rv-done', done);
+sec.querySelector(':scope > .rv-check input').checked = done;
+toc(sec.id)?.classList.toggle('rv-done', done);
+}
+const open = state.comments.filter(c => !c.addressed).length;
+tray.replaceChildren(`${LABEL} `, h('b', { textContent: String(open) }));
+if (drawer.classList.contains('rv-open')) { output.value = exportAs(format.value); if (!list.querySelector('.rv-editor')) renderList(); }
+};
+const commit = () => { save(); render(); };
+for (const sec of sections) {
+const check = h('label', { className: 'rv-ui rv-check' }, h('input', { type: 'checkbox' }), ' Reviewed');
+check.querySelector('input').addEventListener('change', e => {
+if (e.target.checked) state.reviewed[sec.id] = true; else delete state.reviewed[sec.id];
+commit();
+});
+const cards = h('div', { className: 'rv-ui rv-cards' });
+const add = h('button', { type: 'button', className: 'rv-ui rv-add', textContent: '+ Comment' });
+add.addEventListener('click', () => {
+const close = () => form.remove();
+const form = h('div', { className: 'rv-ui rv-form' }, editor({
+onCancel: close,
+onSave: f => {
+if (!f.body) return;
+state.comments.push({ id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, sectionId: sec.id, ...f, ts: Date.now() });
+close();
+commit();
+},
+}));
+add.before(form);
+});
+sec.prepend(check);
+sec.append(cards, add);
+cards.addEventListener('click', e => {
+const act = e.target.closest('[data-action]')?.dataset.action;
+const id = e.target.closest('.rv-card')?.dataset.id;
+const c = state.comments.find(x => x.id === id);
+if (!c) return;
+if (act === 'jump') {
+const m = sec.querySelector(`mark.rv-mark[data-id="${id}"]`);
+m?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+m?.classList.add('rv-flash');
+setTimeout(() => m?.classList.remove('rv-flash'), 900);
+}
+if (act === 'edit') openPopover({ comment: c, x: e.clientX, y: e.clientY });
+if (act === 'addressed') { c.addressed = e.target.checked; commit(); }
+});
+}
+const helper = h('button', { type: 'button', className: 'rv-ui rv-helper', textContent: '+ Comment', hidden: true });
+const popover = h('div', { className: 'rv-ui rv-popover', role: 'dialog', 'aria-label': 'Comment on selection', hidden: true });
+let pending = null;
+const place = (el, x, y) => {
+el.hidden = false;
+const w = el.offsetWidth, ht = el.offsetHeight;
+el.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`;
+el.style.top = `${y + ht + 8 > innerHeight ? Math.max(8, y - ht - 28) : y}px`;
+};
+const closePopover = () => { popover.hidden = true; popover.replaceChildren(); pending = null; };
+function openPopover({ comment, anchor, sectionId, x, y }) {
+helper.hidden = true;
+const quote = comment?.anchor?.text || anchor?.text;
+const ed = editor({
+sev: comment?.sev, body: comment?.body, blocking: comment?.blocking, suggestion: comment?.suggestion,
+code: !!(comment?.anchor || anchor)?.code, anchored: !!(comment?.anchor || anchor),
+kind: comment?.kind, replacement: comment?.replacement, qlabel: comment?.label ? { label: comment.label, tip: comment.tip } : null,
+onCancel: closePopover,
+onDelete: comment ? () => { state.comments = state.comments.filter(c => c !== comment); closePopover(); commit(); } : null,
+onSave: f => {
+if (comment) Object.assign(comment, f);
+else state.comments.push({ id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, sectionId, ...f, anchor, ts: Date.now() });
+closePopover();
+getSelection().removeAllRanges();
+commit();
+},
+});
+popover.replaceChildren(quote ? h('blockquote', { className: 'rv-quote', textContent: quote }) : '', ed);
+place(popover, x, y);
+}
+const onSelect = () => setTimeout(() => {
+const sel = getSelection();
+if (!sel.rangeCount || sel.isCollapsed || !sel.toString().trim()) { helper.hidden = true; return; }
+const r = sel.getRangeAt(0);
+const node = r.commonAncestorContainer;
+const host = (node.nodeType === 1 ? node : node.parentElement);
+const sec = host.closest('main > section[id]');
+if (!sec || host.closest('.rv-ui, [data-ui]')) { helper.hidden = true; return; }
+const m = model(sec);
+const start = offsetOf(m.nodes, r.startContainer, r.startOffset);
+const end = offsetOf(m.nodes, r.endContainer, r.endOffset);
+const c = collapse(m.raw.slice(0, start)).norm.length;
+const text = collapse(m.raw.slice(start, end)).norm.trim();
+if (!text) { helper.hidden = true; return; }
+const found = m.norm.indexOf(text, Math.max(0, c - 1));
+const lead = found < 0 ? c : found;
+pending = { sectionId: sec.id, anchor: {
+text, prefix: m.norm.slice(Math.max(0, lead - CONTEXT), lead), suffix: m.norm.slice(lead + text.length, lead + text.length + CONTEXT),
+...(host.closest('pre') ? { code: true } : {}),
+} };
+const rects = r.getClientRects();
+const last = rects[rects.length - 1] || r.getBoundingClientRect();
+place(helper, last.right - 20, last.bottom + 6);
+}, 0);
+document.addEventListener('mouseup', e => { if (!e.target.closest?.('.rv-helper, .rv-popover')) onSelect(); });
+document.addEventListener('keyup', e => { if (e.shiftKey) onSelect(); });
+helper.addEventListener('click', () => {
+if (!pending) return;
+const { left, top } = helper.getBoundingClientRect();
+openPopover({ ...pending, x: left, y: top });
+});
+main.addEventListener('click', e => {
+const m = e.target.closest('mark.rv-mark');
+const c = m && state.comments.find(x => x.id === m.dataset.id);
+if (c && getSelection().isCollapsed) openPopover({ comment: c, x: e.clientX, y: e.clientY + 12 });
+});
+main.addEventListener('keydown', e => {
+if (e.key === 'Enter' && e.target.matches('mark.rv-mark')) e.target.click();
+});
+document.addEventListener('mousedown', e => {
+if (!popover.hidden && !e.target.closest('.rv-popover, mark.rv-mark, .rv-card')) closePopover();
+});
+const exportAs = fmt => {
+const title = document.querySelector('h1')?.textContent.trim() || document.title;
+const general = { id: GENERAL, isGeneral: true };
+const bySection = [general, ...sections].map(sec => [sec, state.comments.filter(c => c.sectionId === sec.id)]).filter(([, cs]) => cs.length);
+const secLabel = sec => (sec.isGeneral ? 'General' : labelOf(sec));
+if (fmt === 'json') {
+return JSON.stringify({
+artifact: { title, path: location.pathname, id: meta('artifact-id') || null },
+exportedAt: new Date().toISOString(),
+reviewed: sections.filter(s => state.reviewed[s.id]).map(s => s.id),
+blocks: HA.blocks ? HA.blocks() : {},
+comments: bySection.flatMap(([sec, cs]) => cs.map(c => ({
+id: c.id, section: sec.id, sectionLabel: secLabel(sec), kind: c.kind || 'comment', severity: sevOf(c.sev).label, blocking: !!c.blocking,
+body: c.body, replacement: c.replacement ?? null, suggestion: c.suggestion || null, label: c.label || null, tip: c.tip || null,
+quote: c.anchor?.text ?? null, prefix: c.anchor?.prefix ?? null, suffix: c.anchor?.suffix ?? null,
+outdated: !!c.outdated, addressed: !!c.addressed,
+}))),
+}, null, 2);
+}
+if (fmt === 'bullets') {
+return bySection.map(([sec, cs]) => `*${secLabel(sec)}* — ${cs.length} item${cs.length > 1 ? 's' : ''}\n` + cs.map(c =>
+`  • [${label(c)}] ${c.anchor ? `"${c.anchor.text.slice(0, 60)}${c.anchor.text.length > 60 ? '…' : ''}" ` : ''}${c.body.split('\n')[0]}`).join('\n')).join('\n\n');
+}
+const blockList = Object.entries(HA.blocks ? HA.blocks() : {});
+const blocksMd = blockList.length ? `\n### Interactive state\n\n${blockList.map(([n, b]) => `- **${n}**: ${b.summary ?? JSON.stringify(b.state)}`).join('\n')}\n` : '';
+return `## ${title} — review notes\n\n` + bySection.map(([sec, cs]) => `### ${secLabel(sec)}\n\n` + cs.map(c =>
+`**[${label(c)}]**${c.outdated ? ' _(outdated: the highlighted text is no longer on the page)_' : ''}${c.addressed ? ' _(done)_' : ''}\n\n` +
+(c.anchor ? `> ${c.anchor.text}\n\n` : '') + (c.kind === 'replace' ? `Replace with: ${c.replacement || ''}\n\n` : '')
++ (c.kind === 'delete' && !c.body ? 'Remove this text.\n' : '') + (c.body ? `${c.body}\n` : '')
++ (c.label ? `\n_${c.label}. Agent tip: ${c.tip}_\n` : '')
++ (c.suggestion ? `\n\`\`\`suggestion\n${c.suggestion}\n\`\`\`\n` : '')).join('\n')).join('\n') + blocksMd;
+};
+const tray = h('button', { type: 'button', className: 'rv-ui rv-tray', 'aria-haspopup': 'dialog' });
+const format = h('select', { 'aria-label': 'Export format' },
+h('option', { value: 'markdown', textContent: 'Markdown' }), h('option', { value: 'bullets', textContent: 'Slack bullets' }),
+h('option', { value: 'json', textContent: 'JSON for an agent' }));
+const output = h('textarea', { readOnly: true, 'aria-label': 'Export output' });
+const copyBtn = h('button', { type: 'button', className: 'rv-btn', textContent: 'Copy' });
+const sendBtn = h('button', { type: 'button', className: 'rv-btn rv-primary rv-send', textContent: 'Send to Claude' });
+const sendStatus = h('p', { className: 'rv-send-status', 'aria-live': 'polite' });
+const clearBtn = h('button', { type: 'button', className: 'rv-btn rv-danger', textContent: 'Clear all' });
+const generalBtn = h('button', { type: 'button', className: 'rv-btn rv-general', textContent: '+ General comment' });
+const shareBtn = h('button', { type: 'button', className: 'rv-btn rv-share', textContent: 'Copy share link' });
+const tabs = h('div', { className: 'rv-tabs', role: 'tablist' },
+h('button', { type: 'button', role: 'tab', 'data-tab': 'list', 'aria-selected': 'true', textContent: 'Comments' }),
+h('button', { type: 'button', role: 'tab', 'data-tab': 'export', 'aria-selected': 'false', textContent: 'Export' }));
+const list = h('div', { className: 'rv-list', role: 'tabpanel' });
+const exportPane = h('div', { className: 'rv-export', role: 'tabpanel', hidden: true });
+const closeBtn = h('button', { type: 'button', className: 'rv-btn rv-close', 'aria-label': 'Close', textContent: '×' });
+const drawer = h('aside', { className: 'rv-ui rv-drawer', role: 'dialog', 'aria-label': `${LABEL} export` },
+h('div', { className: 'rv-drawer-head' }, h('strong', { textContent: LABEL }), closeBtn),
+h('div', { className: 'rv-row' }, sendBtn, sendStatus), tabs, list, exportPane);
+exportPane.append(h('div', { className: 'rv-row' }, format, copyBtn, shareBtn, clearBtn), output);
+const docOrder = () => {
+const pos = c => {
+const m = c.anchor && document.querySelector(`mark.rv-mark[data-id="${c.id}"]`);
+const sIdx = c.sectionId === GENERAL ? -1 : sections.findIndex(x => x.id === c.sectionId);
+return [sIdx, m ? 0 : 1, m];
+};
+return [...state.comments].sort((a, b) => {
+const [sa, ua, ma] = pos(a), [sb, ub, mb] = pos(b);
+if (sa !== sb) return sa - sb;
+if (ua !== ub) return ua - ub;
+return ma && mb ? (ma.compareDocumentPosition(mb) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1) : 0;
+});
+};
+const renderList = () => {
+const items = docOrder().map(c => {
+const sec = sections.find(x => x.id === c.sectionId);
+const item = h('button', { type: 'button', className: `rv-list-item${c.addressed ? ' rv-addressed' : ''}`, 'data-id': c.id, 'data-tone': sevOf(c.sev).tone },
+h('span', { className: 'rv-badge', 'data-tone': sevOf(c.sev).tone, textContent: label(c) }),
+h('small', { textContent: c.sectionId === GENERAL ? 'General' : sec ? labelOf(sec) : '' }),
+c.anchor ? h('q', { textContent: c.anchor.text }) : null,
+c.body ? h('span', { className: 'rv-list-body', textContent: c.body }) : null);
+return item;
+});
+list.replaceChildren(generalBtn, ...(items.length ? items : [h('p', { className: 'rv-empty', textContent: 'No comments yet. Select text on the page, or use + Comment under a section.' })]));
+};
+list.addEventListener('click', e => {
+const item = e.target.closest('.rv-list-item');
+if (!item) return;
+const m = document.querySelector(`mark.rv-mark[data-id="${item.dataset.id}"]`);
+const target = m || document.querySelector(`.rv-card[data-id="${item.dataset.id}"]`);
+toggleDrawer(false);
+target?.scrollIntoView({ block: 'center' });
+m?.classList.add('rv-flash');
+setTimeout(() => m?.classList.remove('rv-flash'), 900);
+});
+tabs.addEventListener('click', e => {
+const t = e.target.closest('[data-tab]');
+if (!t) return;
+tabs.querySelectorAll('[data-tab]').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+list.hidden = t.dataset.tab !== 'list';
+exportPane.hidden = t.dataset.tab !== 'export';
+});
+generalBtn.addEventListener('click', () => {
+const close = () => { form.remove(); generalBtn.hidden = false; };
+const form = editor({
+onCancel: close,
+onSave: f => {
+if (!f.body) return;
+state.comments.push({ id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, sectionId: GENERAL, ...f, ts: Date.now() });
+close();
+commit();
+},
+});
+generalBtn.hidden = true;
+generalBtn.after(form);
+});
+const toggleDrawer = open => {
+drawer.classList.toggle('rv-open', open);
+if (open) { output.value = exportAs(format.value); renderList(); closeBtn.focus(); }
+};
+tray.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('rv-open')));
+closeBtn.addEventListener('click', () => toggleDrawer(false));
+format.addEventListener('change', () => { output.value = exportAs(format.value); });
+const copyText = async text => {
+try { await navigator.clipboard.writeText(text); return true; } catch {
+const t = h('textarea', {}); t.value = text; document.body.append(t); t.select();
+const ok = document.execCommand('copy'); t.remove(); return ok;
+}
+};
+sendBtn.addEventListener('click', async () => {
+const payload = exportAs('json');
+const url = window.__CLAUDE_SUBMIT_URL__;
+sendStatus.textContent = 'Sending…';
+if (url) {
+try {
+const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload });
+if (res.ok) { sendStatus.textContent = 'Sent to Claude.'; return; }
+} catch { /* fall through to the clipboard */ }
+}
+await copyText(payload);
+sendStatus.textContent = url ? 'Claude wasn\'t listening, so the review is on your clipboard. Paste it into the chat.'
+: 'Copied to your clipboard. Paste it into the chat.';
+});
+copyBtn.addEventListener('click', async () => {
+try { await navigator.clipboard.writeText(output.value); } catch { output.select(); document.execCommand('copy'); }
+copyBtn.textContent = 'Copied';
+setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+});
+clearBtn.addEventListener('click', () => {
+if (clearBtn.dataset.armed) {
+state.comments = [];
+state.reviewed = {};
+delete clearBtn.dataset.armed;
+clearBtn.textContent = 'Clear all';
+commit();
+} else {
+clearBtn.dataset.armed = '1';
+clearBtn.textContent = 'Click again to clear';
+}
+});
+document.addEventListener('keydown', e => {
+if (e.key !== 'Escape') return;
+if (!popover.hidden) closePopover();
+else if (drawer.classList.contains('rv-open')) toggleDrawer(false);
+});
+const b64 = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64 = str => Uint8Array.from(atob(str.replace(/-/g, '+').replace(/_/g, '/')), ch => ch.charCodeAt(0));
+const pipe = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+const shareLink = async () => {
+const packed = await pipe(new TextEncoder().encode(JSON.stringify({ comments: state.comments, reviewed: state.reviewed })), new CompressionStream('deflate-raw'));
+return `${location.href.split('#')[0]}#ha=${b64(packed)}`;
+};
+const importShared = async () => {
+const m = location.hash.match(/^#ha=([\w-]+)/);
+if (!m) return;
+try {
+const data = JSON.parse(new TextDecoder().decode(await pipe(unb64(m[1]), new DecompressionStream('deflate-raw'))));
+const known = new Set(state.comments.map(c => c.id));
+const added = (data.comments || []).filter(c => !known.has(c.id));
+state.comments.push(...added);
+Object.assign(state.reviewed, data.reviewed || {});
+commit();
+notice(`Merged ${added.length} comment${added.length === 1 ? '' : 's'} from a shared link.`);
+} catch { notice('This share link could not be read.'); }
+history.replaceState(null, '', location.pathname + location.search);
+};
+const notice = text => {
+const n = h('div', { className: 'rv-ui rv-notice', role: 'status', textContent: text });
+document.body.append(n);
+setTimeout(() => n.remove(), 4000);
+};
+shareBtn.addEventListener('click', async () => {
+const ok = await copyText(await shareLink());
+shareBtn.textContent = ok ? 'Link copied' : 'Copy failed';
+setTimeout(() => { shareBtn.textContent = 'Copy share link'; }, 1400);
+});
+const SEEN = `html-artifact:${location.pathname}:seen`;
+const built = (() => { try { return JSON.parse(document.querySelector('script[data-component="sections"]')?.textContent || '{}'); } catch { return {}; } })();
+const seen = HA.store.get(SEEN, {});
+const wordDiff = (a, b) => {
+const x = a.split(/(\s+)/), y = b.split(/(\s+)/);
+if (x.length * y.length > 4e6) return [['del', a], ['ins', b]];
+const L = Array.from({ length: x.length + 1 }, () => new Uint32Array(y.length + 1));
+for (let i = x.length - 1; i >= 0; i--) for (let j = y.length - 1; j >= 0; j--) L[i][j] = x[i] === y[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+const out = [];
+const push = (t, v) => { if (out.length && out[out.length - 1][0] === t) out[out.length - 1][1] += v; else out.push([t, v]); };
+let i = 0, j = 0;
+while (i < x.length && j < y.length) {
+if (x[i] === y[j]) { push('eq', x[i]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) push('del', x[i++]); else push('ins', y[j++]);
+}
+while (i < x.length) push('del', x[i++]);
+while (j < y.length) push('ins', y[j++]);
+return out;
+};
+for (const sec of sections) {
+const now = built[sec.id];
+if (now === undefined) continue;
+const before = seen[sec.id];
+if (before === undefined) { seen[sec.id] = now; continue; }
+if (before === now) continue;
+sec.classList.add('rv-changed');
+const diff = h('div', { className: 'rv-ui rv-diff', hidden: true },
+...wordDiff(before, now).map(([t, v]) => (t === 'eq' ? v : h(t, { textContent: v }))));
+const showBtn = h('button', { type: 'button', className: 'rv-link rv-changed-btn', textContent: 'Show changes' });
+const seenBtn = h('button', { type: 'button', className: 'rv-link', textContent: 'Mark as seen' });
+const bar = h('div', { className: 'rv-ui rv-changed-bar' }, h('span', { textContent: 'Changed since you last looked.' }), showBtn, seenBtn);
+showBtn.addEventListener('click', () => { diff.hidden = !diff.hidden; showBtn.textContent = diff.hidden ? 'Show changes' : 'Hide changes'; });
+seenBtn.addEventListener('click', () => { seen[sec.id] = now; HA.store.set(SEEN, seen); bar.remove(); diff.remove(); sec.classList.remove('rv-changed'); });
+sec.querySelector(':scope > .rv-check').after(bar, diff);
+}
+HA.store.set(SEEN, seen);
+document.body.append(helper, popover, tray, drawer);
+render();
+importShared();
+performance.measure('ha:review-init', 'ha:review-start');
+HA.review = { export: exportAs, shareLink, state: () => JSON.parse(JSON.stringify(state)), clear: () => { state.comments = []; state.reviewed = {}; commit(); } };
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();</script>
+<script data-component="ask">(() => {
+const HA = window.HA;
+document.querySelectorAll('.ask').forEach((box, n) => {
+const id = box.dataset.id || `ask-${n + 1}`;
+const def = box.dataset.default || '';
+const radios = [...box.querySelectorAll('input[type=radio]')];
+const labelOf = v => radios.find(r => r.value === v)?.closest('label')?.textContent.replace(/recommended$/i, '').trim() || v;
+let touched = false;
+const def0 = radios.find(r => r.value === def);
+if (def0) {
+def0.checked = true;
+const rec = Object.assign(document.createElement('span'), { className: 'rec', textContent: 'recommended' });
+rec.dataset.ui = '';
+def0.closest('label').append(rec);
+}
+const note = Object.assign(document.createElement('textarea'), { rows: 2, placeholder: 'Why? (optional)' });
+note.dataset.ui = '';
+note.setAttribute('aria-label', 'Note on this decision');
+const status = Object.assign(document.createElement('p'), { className: 'ask-status' });
+status.dataset.ui = '';
+status.setAttribute('aria-live', 'polite');
+box.append(note, status);
+const answer = () => radios.find(r => r.checked)?.value ?? null;
+const statusOf = () => (!touched ? 'not opened' : answer() === def ? 'default kept' : 'chosen');
+const show = () => {
+const s = statusOf();
+box.dataset.status = s;
+status.textContent = s === 'not opened' ? `Not answered yet. The recommendation is ${labelOf(def)}.`
+: s === 'default kept' ? 'You kept the recommendation.' : `You chose ${labelOf(answer())}.`;
+};
+HA.register(`ask:${id}`, {
+el: box,
+state: () => ({ answer: answer(), status: statusOf(), note: note.value }),
+restore: s => {
+radios.forEach(r => { r.checked = r.value === s.answer; });
+note.value = s.note || '';
+touched = s.status !== 'not opened';
+show();
+},
+summary: () => { const s = statusOf(); return s === 'chosen' ? `chosen: ${labelOf(answer())}` : `${s}: ${labelOf(answer())}`; },
+});
+const changed = () => { touched = true; show(); HA.changed(`ask:${id}`); };
+box.addEventListener('change', changed);
+box.addEventListener('click', e => { if (e.target.matches('input[type=radio]')) changed(); });
+note.addEventListener('input', changed);
+show();
+});
+})();</script>
+<script data-component="code">(() => {
+const KEYWORDS = 'async await def class return raise if elif else for while try except finally with from import in not and or None True False lambda yield pass break continue as is self cls global nonlocal del assert const let var function new this typeof instanceof export default interface type enum public private SELECT FROM WHERE JOIN LEFT RIGHT INNER OUTER ON GROUP BY ORDER HAVING LIMIT INSERT UPDATE DELETE SET VALUES INTO AS IS NULL COUNT AND OR NOT';
+const BUILTINS = 'str int bool list dict set tuple float bytes len range isinstance sum type hasattr getattr setattr repr print object Exception ValueError TypeError RuntimeError KeyError Optional Literal Any Callable Decimal datetime timedelta date console JSON Promise Array Object Map';
+const words = s => s.split(' ').join('|');
+const MASTER = new RegExp(
+'(#[^\\n]*|--\\s[^\\n]*|//[^\\n]*)'
++ '|([fFrRbB]{0,2}"(?:[^"\\\\\\n]|\\\\.)*"|[fFrRbB]{0,2}\'(?:[^\'\\\\\\n]|\\\\.)*\'|`(?:[^`\\\\]|\\\\.)*`)'
++ '|(@[A-Za-z_][\\w.]*)'
++ `|\\b(${words(KEYWORDS)})\\b`
++ `|\\b(${words(BUILTINS)})\\b`
++ '|(\\b\\d+(?:\\.\\d+)?\\b)'
++ '|(\\b[A-Z][a-z0-9_]+[A-Z]?[A-Za-z0-9_]*\\b)', 'g');
+const CLASS = [null, 'c', 's', 'd', 'k', 'b', 'n', 't'];
+const highlight = el => {
+const text = el.textContent;
+const out = document.createDocumentFragment();
+let last = 0;
+MASTER.lastIndex = 0;
+for (let m; (m = MASTER.exec(text));) {
+if (m.index > last) out.append(text.slice(last, m.index));
+const span = document.createElement('span');
+span.className = `hl-${CLASS[m.findIndex((v, i) => i > 0 && v !== undefined)]}`;
+span.textContent = m[0];
+out.append(span);
+last = m.index + m[0].length;
+}
+out.append(text.slice(last));
+el.replaceChildren(out);
+};
+document.querySelectorAll('pre:not(.diff) > code[class*="language-"]:not(.language-text):not(.language-json):not(.language-yaml)').forEach(highlight);
+document.querySelectorAll('pre.diff > code').forEach(code => {
+code.replaceChildren(...code.textContent.replace(/\n$/, '').split('\n').map(line => {
+const span = document.createElement('span');
+span.className = `ln ${line.startsWith('@@') ? 'hunk' : line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : 'ctx'}`;
+span.textContent = line || ' ';
+return span;
+}));
+});
+const HA = (window.HA = window.HA || {});
+const el = (tag, cls, text) => Object.assign(document.createElement(tag), cls ? { className: cls } : {}, text !== undefined ? { textContent: text } : {});
+const ui = node => { node.dataset.ui = ''; return node; };
+const boxes = [...document.querySelectorAll('.annotated')];
+boxes.forEach((box, n) => {
+box.id = box.id || `file-${n + 1}`;
+box.querySelectorAll('pre.diff .ln').forEach(line => {
+const m = line.textContent.match(/\s*⟦([\w-]+)⟧\s*$/);
+if (!m) return;
+line.textContent = line.textContent.slice(0, m.index);
+line.dataset.note = m[1];
+line.append(ui(Object.assign(el('a', 'mark', m[1]), { href: `#${m[1]}` })));
+});
+box.querySelectorAll('ol.notes > li[id]').forEach(li => li.prepend(ui(el('span', 'mark', li.id))));
+box.addEventListener('click', e => {
+const a = e.target.closest('a.mark');
+if (!a) return;
+e.preventDefault();
+document.querySelectorAll('.notes li.active').forEach(x => x.classList.remove('active'));
+const note = document.getElementById(a.getAttribute('href').slice(1));
+note?.classList.add('active');
+note?.scrollIntoView({ block: 'nearest' });
+});
+const pre = box.querySelector('pre.diff');
+if (!pre) return;
+const tools = ui(el('div', 'anno-tools'));
+const toggle = el('button', 'split-toggle', 'Split view');
+toggle.type = 'button';
+tools.append(toggle);
+pre.before(tools);
+let split = null;
+toggle.addEventListener('click', () => {
+if (!split) {
+const old = el('div', 'side old'), neu = el('div', 'side new');
+const lines = [...pre.querySelectorAll('.ln')];
+const copy = (line, side) => { const c = line.cloneNode(true); side.append(c); };
+const blank = side => side.append(el('span', 'ln pad', ' '));
+for (let i = 0; i < lines.length;) {
+const kind = lines[i].classList[1];
+if (kind === 'del' || kind === 'add') {
+const dels = [], adds = [];
+while (i < lines.length && lines[i].classList.contains('del')) dels.push(lines[i++]);
+while (i < lines.length && lines[i].classList.contains('add')) adds.push(lines[i++]);
+for (let k = 0; k < Math.max(dels.length, adds.length); k++) {
+dels[k] ? copy(dels[k], old) : blank(old);
+adds[k] ? copy(adds[k], neu) : blank(neu);
+}
+} else { copy(lines[i], old); copy(lines[i], neu); i++; }
+}
+split = el('div', 'split');
+split.append(old, neu);
+pre.after(split);
+split.hidden = true;
+}
+const toSplit = split.hidden;
+split.hidden = !toSplit;
+pre.hidden = toSplit;
+toggle.textContent = toSplit ? 'Unified view' : 'Split view';
+});
+});
+if (boxes.length) {
+const key = `html-artifact:${location.pathname}:viewed`;
+const viewed = HA.store ? HA.store.get(key, {}) : {};
+const nav = ui(el('nav', 'files'));
+nav.setAttribute('aria-label', 'Files in this review');
+const count = el('span', 'count');
+const head = el('p', 'files-head');
+head.append(el('b', '', 'Files '), count);
+const list = el('ul');
+const show = () => {
+boxes.forEach(b => b.classList.toggle('viewed', !!viewed[b.dataset.file]));
+count.textContent = `${boxes.filter(b => viewed[b.dataset.file]).length} / ${boxes.length} viewed`;
+};
+boxes.forEach(b => {
+const li = el('li');
+const box = Object.assign(el('input'), { type: 'checkbox', checked: !!viewed[b.dataset.file] });
+box.setAttribute('aria-label', `Viewed ${b.dataset.file}`);
+box.addEventListener('change', () => { viewed[b.dataset.file] = box.checked; HA.store?.set(key, viewed); show(); });
+li.append(box, Object.assign(el('a', '', b.dataset.file), { href: `#${b.id}` }));
+list.append(li);
+});
+nav.append(head, list);
+boxes[0].before(nav);
+show();
+}
+HA.highlight = highlight;
+})();</script>
+<script data-component="content">(() => {
+const HA = window.HA;
+document.querySelectorAll('ol.ranked, ul.checklist').forEach((list, n) => {
+const boxes = [...list.querySelectorAll('input[type=checkbox]')];
+const key = `html-artifact:${location.pathname}:checklist:${n}`;
+const saved = HA.store.get(key, []);
+boxes.forEach((b, i) => { b.checked = !!saved[i]; });
+const progress = document.createElement('p');
+progress.className = 'progress';
+progress.dataset.ui = '';
+progress.setAttribute('aria-live', 'polite');
+list.before(progress);
+const show = () => { progress.textContent = `${boxes.filter(b => b.checked).length} / ${boxes.length} done`; };
+list.addEventListener('change', () => { HA.store.set(key, boxes.map(b => b.checked)); show(); });
+show();
+});
+})();</script>
+<script data-component="diagram">(() => {
+const HA = window.HA;
+const SVG = 'http://www.w3.org/2000/svg';
+const PAINT = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'font-family', 'font-size', 'font-weight', 'text-anchor', 'dominant-baseline', 'opacity'];
+const serialize = svg => {
+const clone = svg.cloneNode(true);
+const src = [svg, ...svg.querySelectorAll('*')];
+const dst = [clone, ...clone.querySelectorAll('*')];
+src.forEach((el, i) => {
+const cs = getComputedStyle(el);
+for (const p of PAINT) {
+const v = cs.getPropertyValue(p);
+if (v && v !== 'none' && v !== 'normal' && v !== 'auto' || (p === 'fill' && v === 'none')) dst[i].setAttribute(p, v);
+}
+dst[i].removeAttribute('class');
+dst[i].removeAttribute('tabindex');
+dst[i].removeAttribute('role');
+});
+clone.setAttribute('xmlns', SVG);
+return clone.outerHTML;
+};
+document.querySelectorAll('figure.diagram').forEach((fig, n) => {
+const svg = fig.querySelector('svg');
+if (!svg) return;
+const id = `ha-arrow-${n}`;
+const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(SVG, 'defs'), svg.firstChild);
+const marker = document.createElementNS(SVG, 'marker');
+Object.entries({ id, viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' })
+.forEach(([k, v]) => marker.setAttribute(k, v));
+const head = document.createElementNS(SVG, 'path');
+head.setAttribute('d', 'M0,0 L10,5 L0,10 z');
+head.setAttribute('class', 'arrowhead');
+marker.append(head);
+defs.append(marker);
+svg.querySelectorAll('.edge').forEach(e => { if (!e.getAttribute('marker-end')) e.setAttribute('marker-end', `url(#${id})`); });
+const panel = document.createElement('div');
+panel.className = 'detail';
+panel.dataset.ui = '';
+panel.hidden = true;
+panel.setAttribute('aria-live', 'polite');
+const open = node => {
+const was = node.classList.contains('open');
+svg.querySelectorAll('.node.open').forEach(x => x.classList.remove('open'));
+if (was) { panel.hidden = true; return; }
+node.classList.add('open');
+const title = document.createElement('b');
+title.textContent = node.querySelector('text')?.textContent.trim() || '';
+panel.replaceChildren(title, node.dataset.detail);
+panel.hidden = false;
+};
+svg.querySelectorAll('.node[data-detail]').forEach(node => {
+node.setAttribute('tabindex', '0');
+node.setAttribute('role', 'button');
+node.addEventListener('click', () => open(node));
+node.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(node); } });
+});
+const tools = document.createElement('div');
+tools.className = 'tools';
+tools.dataset.ui = '';
+const copy = document.createElement('button');
+copy.type = 'button';
+copy.className = 'copy-svg';
+copy.textContent = 'Copy SVG';
+copy.addEventListener('click', async () => {
+const text = serialize(svg);
+try { await navigator.clipboard.writeText(text); } catch {
+const t = Object.assign(document.createElement('textarea'), { value: text });
+document.body.append(t); t.select(); document.execCommand('copy'); t.remove();
+}
+copy.textContent = 'Copied';
+setTimeout(() => { copy.textContent = 'Copy SVG'; }, 1200);
+});
+tools.append(copy);
+(fig.querySelector('figcaption') || svg).after(panel, tools);
+});
+HA.diagram = { serialize };
+})();</script>
+<script data-component="editor">(() => {
+const HA = window.HA;
+const h = (tag, props = {}) => { const e = Object.assign(document.createElement(tag), props); e.dataset.ui = ''; return e; };
+document.querySelectorAll('.editor-list').forEach(list => {
+const id = list.dataset.id || 'editor';
+const labels = (list.dataset.labels || '').split(',').map(s => s.trim()).filter(Boolean);
+const tones = (list.dataset.tones || '').split(',').map(s => s.trim());
+const toneOf = label => tones[labels.indexOf(label)] || '';
+const items = [...list.querySelectorAll(':scope > li[data-id]')];
+const originals = new Map();
+const textNodes = new Map();
+const elBy = new Map(items.map(li => [li.dataset.id, li]));
+for (const li of items) {
+const small = li.querySelector('small');
+const main = [...li.childNodes].filter(n => n !== small).map(n => n.textContent).join(' ').trim().replace(/\s+/g, ' ');
+originals.set(li.dataset.id, main);
+li.replaceChildren();
+const textNode = document.createTextNode(main);
+textNodes.set(li.dataset.id, textNode);
+li.append(textNode);
+if (small) li.append(' ', small);
+const chips = h('span', { className: 'et-chips' });
+for (const label of labels) {
+const chip = h('button', { type: 'button', className: 'et-chip', textContent: label, title: `Toggle ${label}` });
+chip.dataset.label = label;
+chip.dataset.tone = toneOf(label);
+chip.setAttribute('aria-pressed', 'false');
+chips.append(chip);
+}
+const del = h('button', { type: 'button', className: 'et-del', textContent: '×' });
+li.append(chips, del);
+li.tabIndex = 0;
+li.draggable = true;
+}
+const state = { order: items.map(li => li.dataset.id), labels: {}, deleted: [], edits: {} };
+let filterLabel = null;
+let dragId = null;
+const wrap = document.createElement('div');
+wrap.className = 'et-wrap';
+list.replaceWith(wrap);
+const toolbar = h('div', { className: 'et-toolbar' });
+const filterSelect = h('select', { className: 'et-filter' });
+filterSelect.setAttribute('aria-label', 'Filter by label');
+filterSelect.append(h('option', { value: '', textContent: 'All labels' }));
+for (const label of labels) filterSelect.append(h('option', { value: label, textContent: label }));
+const count = h('span', { className: 'et-count' });
+count.setAttribute('aria-live', 'polite');
+toolbar.append(filterSelect, count);
+const trash = h('details', { className: 'et-trash', hidden: true });
+trash.append(h('summary', { textContent: 'Deleted' }));
+const trashList = h('ul', { className: 'et-trash-list' });
+trash.append(trashList);
+wrap.append(toolbar, list, trash);
+const countText = () => {
+const live = state.order.filter(x => !state.deleted.includes(x));
+const parts = [`${live.length} item${live.length === 1 ? '' : 's'}`];
+for (const label of labels) {
+const n = live.filter(x => (state.labels[x] || []).includes(label)).length;
+if (n) parts.push(`${n} labelled ${label}`);
+}
+if (state.deleted.length) parts.push(`${state.deleted.length} deleted`);
+return parts.join(' · ');
+};
+const render = () => {
+for (const [idd, li] of elBy) {
+textNodes.get(idd).textContent = state.edits[idd] ?? originals.get(idd);
+const active = new Set(state.labels[idd] || []);
+li.querySelectorAll('.et-chip').forEach(chip => chip.setAttribute('aria-pressed', String(active.has(chip.dataset.label))));
+const isDeleted = state.deleted.includes(idd);
+li.classList.toggle('et-deleted', isDeleted);
+li.draggable = !isDeleted;
+li.tabIndex = isDeleted ? -1 : 0;
+li.querySelector('.et-del').textContent = isDeleted ? 'Restore' : '×';
+li.querySelector('.et-del').setAttribute('aria-label', `${isDeleted ? 'Restore' : 'Delete'} ${idd}`);
+}
+const visible = state.order
+.filter(idd => !state.deleted.includes(idd))
+.filter(idd => !filterLabel || (state.labels[idd] || []).includes(filterLabel));
+list.replaceChildren(...visible.map(idd => elBy.get(idd)));
+trashList.replaceChildren(...state.deleted.map(idd => elBy.get(idd)));
+trash.hidden = !state.deleted.length;
+count.textContent = countText();
+};
+const commit = () => { HA.changed(`editor:${id}`); render(); };
+const commitOrderFromDom = () => {
+const newVisible = [...list.children].map(li => li.dataset.id);
+let k = 0;
+state.order = state.order.map(idd => {
+const eligible = !state.deleted.includes(idd) && (!filterLabel || (state.labels[idd] || []).includes(filterLabel));
+return eligible ? newVisible[k++] : idd;
+});
+commit();
+};
+let toastTimer;
+const toast = (text, onUndo) => {
+document.querySelectorAll('.et-toast').forEach(t => t.remove());
+clearTimeout(toastTimer);
+const el = h('div', { className: 'et-toast' });
+el.append(document.createTextNode(text), ' ');
+const undo = h('button', { type: 'button', textContent: 'Undo' });
+undo.addEventListener('click', () => { onUndo(); el.remove(); });
+el.append(undo);
+document.body.append(el);
+toastTimer = setTimeout(() => el.remove(), 5000);
+};
+const toggleDeleted = idd => {
+const was = state.deleted.includes(idd);
+state.deleted = was ? state.deleted.filter(x => x !== idd) : [...state.deleted, idd];
+commit();
+if (!was) toast(`Deleted ${idd}`, () => toggleDeleted(idd));
+};
+const textNodeOf = idd => textNodes.get(idd);
+const startEdit = li => {
+const idd = li.dataset.id;
+if (state.deleted.includes(idd)) return;
+const text = textNodeOf(idd);
+const input = h('input', { type: 'text', className: 'et-edit', value: state.edits[idd] ?? originals.get(idd) });
+li.insertBefore(input, text);
+text.remove();
+input.focus();
+input.select();
+const finish = save => {
+input.remove();
+li.insertBefore(text, li.firstChild);
+if (save) {
+const val = input.value.trim();
+if (val && val !== originals.get(idd)) state.edits[idd] = val; else delete state.edits[idd];
+commit();
+}
+};
+input.addEventListener('keydown', e => {
+if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+});
+input.addEventListener('blur', () => finish(true));
+};
+wrap.addEventListener('click', e => {
+const chip = e.target.closest('.et-chip');
+if (chip) {
+const li = chip.closest('li');
+const idd = li.dataset.id;
+const set = new Set(state.labels[idd] || []);
+set.has(chip.dataset.label) ? set.delete(chip.dataset.label) : set.add(chip.dataset.label);
+state.labels[idd] = [...set];
+commit();
+return;
+}
+const del = e.target.closest('.et-del');
+if (del) toggleDeleted(del.closest('li').dataset.id);
+});
+wrap.addEventListener('dblclick', e => {
+if (e.target.closest('.et-chip, .et-del, small, input')) return;
+const li = e.target.closest('li[data-id]');
+if (li && !state.deleted.includes(li.dataset.id)) startEdit(li);
+});
+wrap.addEventListener('keydown', e => {
+const li = e.target.closest?.('li[data-id]') || document.activeElement?.closest?.('li[data-id]');
+if (!li || state.deleted.includes(li.dataset.id)) return;
+if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+e.preventDefault();
+const sib = e.key === 'ArrowUp' ? li.previousElementSibling : li.nextElementSibling;
+if (!sib) return;
+e.key === 'ArrowUp' ? sib.before(li) : sib.after(li);
+li.focus();
+commitOrderFromDom();
+} else if (e.key === 'Enter' && !e.target.closest('input')) {
+e.preventDefault();
+startEdit(li);
+}
+});
+wrap.addEventListener('dragstart', e => {
+const li = e.target.closest('li[data-id]');
+if (!li || state.deleted.includes(li.dataset.id)) return;
+dragId = li.dataset.id;
+e.dataTransfer.effectAllowed = 'move';
+e.dataTransfer.setData('text/plain', dragId);
+});
+wrap.addEventListener('dragover', e => {
+const li = e.target.closest('li[data-id]');
+if (!li || !dragId || li.dataset.id === dragId) return;
+e.preventDefault();
+});
+wrap.addEventListener('drop', e => {
+const li = e.target.closest('li[data-id]');
+if (!li || !dragId || li.dataset.id === dragId) return;
+e.preventDefault();
+const dragged = elBy.get(dragId);
+const before = e.clientY < li.getBoundingClientRect().top + li.offsetHeight / 2;
+before ? li.before(dragged) : li.after(dragged);
+dragId = null;
+commitOrderFromDom();
+});
+filterSelect.addEventListener('change', () => { filterLabel = filterSelect.value || null; render(); });
+HA.register(`editor:${id}`, {
+state: () => JSON.parse(JSON.stringify(state)),
+restore: s => { Object.assign(state, { order: s.order, labels: s.labels, deleted: s.deleted, edits: s.edits }); },
+summary: () => countText(),
+});
+render();
+});
+})();</script>
+<script data-component="erd">(() => {
+const HA = window.HA;
+const SVG = 'http://www.w3.org/2000/svg';
+const se = (tag, attrs = {}) => {
+const e = document.createElementNS(SVG, tag);
+for (const k in attrs) e.setAttribute(k, attrs[k]);
+return e;
+};
+const refs = erd => [...erd.querySelectorAll('tr[data-ref]')].map(row => {
+const [entity, col] = row.dataset.ref.split('.');
+const target = erd.querySelector(`table.entity[data-name="${entity}"] tr[data-col="${col}"]`);
+return target ? { row, target, card: row.dataset.card } : null;
+}).filter(Boolean);
+const edgesOf = erd => refs(erd).map(({ row, target, card }) => {
+const a = row.getBoundingClientRect(), b = target.getBoundingClientRect();
+const fromLeft = a.left + a.width / 2 > b.left + b.width / 2;
+const x1 = fromLeft ? a.left : a.right, y1 = a.top + a.height / 2;
+const x2 = fromLeft ? b.right : b.left, y2 = b.top + b.height / 2;
+const [many, one] = card ? card.split(':').reverse() : ['n', '1'];
+return { row, target, x1, y1, x2, y2, one, many };
+});
+function draw(erd, svg) {
+const box = erd.getBoundingClientRect();
+svg.style.width = `${erd.scrollWidth}px`;
+svg.style.height = `${erd.scrollHeight}px`;
+svg.replaceChildren();
+const label = (text, x, y) => {
+const g = se('g', { class: 'label' });
+const t = se('text', { x, y: y + 1 });
+t.textContent = text;
+g.append(se('rect', { x: x - 8, y: y - 9, width: 16, height: 18 }), t);
+svg.append(g);
+};
+for (const e of edgesOf(erd)) {
+const x1 = e.x1 - box.left, y1 = e.y1 - box.top, x2 = e.x2 - box.left, y2 = e.y2 - box.top;
+const mx = (x1 + x2) / 2;
+const path = se('path', { class: 'edge', d: `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}` });
+path.dataset.row = e.row.closest('table.entity').dataset.name;
+path.dataset.target = e.target.closest('table.entity').dataset.name;
+svg.append(path);
+label(e.many, x1 + (x2 > x1 ? 10 : -10), y1);
+label(e.one, x2 + (x1 > x2 ? 10 : -10), y2);
+}
+}
+function applyFocus(erd, name) {
+const related = new Set();
+if (name) {
+related.add(name);
+for (const { row, target } of refs(erd)) {
+const a = row.closest('table.entity').dataset.name;
+const b = target.closest('table.entity').dataset.name;
+if (a === name) related.add(b);
+if (b === name) related.add(a);
+}
+}
+erd.querySelectorAll('table.entity').forEach(t => {
+const n = t.dataset.name;
+t.classList.toggle('focus', n === name);
+t.classList.toggle('dim', !!name && !related.has(n));
+});
+erd.querySelectorAll('.lines .edge').forEach(p => {
+p.classList.toggle('active', !!name && (p.dataset.row === name || p.dataset.target === name));
+});
+}
+function applySearch(erd, query) {
+const q = query.trim().toLowerCase();
+erd.querySelectorAll('tr[data-col]').forEach(row => {
+row.classList.toggle('match', !!q && row.dataset.col.toLowerCase().includes(q));
+});
+}
+document.querySelectorAll('.erd').forEach((erd, idx) => {
+const id = erd.dataset.id || `erd-${idx}`;
+const name = `erd:${id}`;
+const tables = [...erd.children];
+const search = document.createElement('div');
+search.className = 'search';
+const input = Object.assign(document.createElement('input'), { type: 'search', placeholder: 'Search columns' });
+input.setAttribute('aria-label', 'Search columns');
+search.append(input);
+const grid = document.createElement('div');
+grid.className = 'grid';
+grid.append(...tables);
+const lines = se('svg', { class: 'lines' });
+erd.append(search, grid, lines);
+let state = { focus: null, search: '' };
+const redraw = () => draw(erd, lines);
+new ResizeObserver(redraw).observe(erd);
+grid.addEventListener('click', e => {
+const caption = e.target.closest('caption');
+if (!caption) return;
+const n = caption.closest('table.entity').dataset.name;
+state.focus = state.focus === n ? null : n;
+applyFocus(erd, state.focus);
+HA.changed(name);
+});
+input.addEventListener('input', () => {
+state.search = input.value;
+applySearch(erd, state.search);
+HA.changed(name);
+});
+HA.register(name, {
+state: () => state,
+restore: s => {
+state = { focus: s.focus || null, search: s.search || '' };
+input.value = state.search;
+applyFocus(erd, state.focus);
+applySearch(erd, state.search);
+redraw();
+},
+summary: () => (state.focus ? `focus: ${state.focus}` : state.search ? `search: "${state.search}"` : 'no focus'),
+});
+});
+HA.erd = { edges: edgesOf };
+})();</script>
+<script data-component="explorer">(() => {
+const HA = window.HA;
+const PAGE_SIZE = 200;
+const quote = v => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+const toCSV = (rows, cols) => [cols.join(','), ...rows.map(r => cols.map(c => quote(String(r[c] ?? ''))).join(','))].join('\n');
+const numOf = v => { const n = Number(v); return v !== '' && v !== null && v !== undefined && !isNaN(n) ? n : null; };
+document.querySelectorAll('.explorer').forEach((root, n) => {
+const id = root.dataset.id || root.id || String(n);
+const facetFields = (root.dataset.facets || '').split(',').map(s => s.trim()).filter(Boolean);
+const timeField = root.dataset.time || null;
+const script = root.querySelector('script[type="application/json"]');
+const rows = script ? JSON.parse(script.textContent) : [];
+const columns = rows.length ? Object.keys(rows[0]) : [];
+const idxOf = new Map(rows.map((r, i) => [r, i]));
+const filters = {};
+facetFields.forEach(f => { filters[f] = new Set(); });
+let search = '';
+let sortField = null, sortDir = 1;
+let page = 0;
+let lastFiltered = rows;
+const expanded = new Set();
+const matchesFacetsExcept = (row, except) => facetFields.every(f => {
+if (f === except) return true;
+const sel = filters[f];
+return sel.size === 0 || sel.has(String(row[f]));
+});
+const matchesSearch = row => !search || columns.some(c => String(row[c] ?? '').toLowerCase().includes(search));
+const matchesAll = row => matchesFacetsExcept(row, null) && matchesSearch(row);
+const sqlWhere = () => {
+const clauses = facetFields.filter(f => filters[f].size).map(f => {
+const vals = [...filters[f]].map(v => `'${v.replace(/'/g, "''")}'`);
+return vals.length === 1 ? `${f} = ${vals[0]}` : `${f} IN (${vals.join(', ')})`;
+});
+return clauses.length ? clauses.join(' AND ') : '1=1';
+};
+const summaryText = () => {
+const parts = facetFields.filter(f => filters[f].size).map(f => `${f}=${[...filters[f]].join('|')}`);
+let s = `${lastFiltered.length} of ${rows.length} rows`;
+if (parts.length) s += ' · ' + parts.join(', ');
+if (search) s += ` · search="${search}"`;
+return s;
+};
+const header = document.createElement('div');
+header.className = 'exp-header';
+header.dataset.ui = '';
+const countP = document.createElement('p');
+countP.className = 'exp-count';
+header.append(countP);
+const layout = document.createElement('div');
+layout.className = 'exp-layout';
+const sidebar = document.createElement('aside');
+sidebar.className = 'exp-facets';
+sidebar.dataset.ui = '';
+const content = document.createElement('div');
+content.className = 'exp-content';
+layout.append(sidebar, content);
+const facetLists = {};
+facetFields.forEach(field => {
+const group = document.createElement('div');
+group.className = 'exp-facet-group';
+const h = document.createElement('h4');
+h.textContent = field;
+const list = document.createElement('ul');
+group.append(h, list);
+sidebar.append(group);
+facetLists[field] = list;
+});
+const tools = document.createElement('div');
+tools.className = 'exp-tools';
+tools.dataset.ui = '';
+const search_ = Object.assign(document.createElement('input'), { type: 'search', placeholder: 'Search all fields' });
+search_.setAttribute('aria-label', 'Search all fields');
+const csvBtn = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Copy CSV' });
+const sqlBtn = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Copy as SQL WHERE' });
+tools.append(search_, csvBtn, sqlBtn);
+const histoWrap = document.createElement('div');
+histoWrap.className = 'exp-histo';
+histoWrap.dataset.ui = '';
+const table = document.createElement('table');
+table.className = 'exp-table';
+const thead = document.createElement('thead');
+const headRow = document.createElement('tr');
+columns.forEach(col => { const th = document.createElement('th'); th.textContent = col; th.tabIndex = 0; headRow.append(th); });
+thead.append(headRow);
+const tbody = document.createElement('tbody');
+table.append(thead, tbody);
+const pager = document.createElement('div');
+pager.className = 'exp-pager';
+pager.dataset.ui = '';
+const prevBtn = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Prev' });
+const nextBtn = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Next' });
+const pageLabel = document.createElement('span');
+pager.append(prevBtn, pageLabel, nextBtn);
+content.append(tools, ...(timeField ? [histoWrap] : []), table, pager);
+root.append(header, layout);
+const renderFacets = () => {
+facetFields.forEach(field => {
+const counts = new Map();
+rows.forEach(r => {
+if (!matchesFacetsExcept(r, field) || !matchesSearch(r)) return;
+const v = String(r[field]);
+counts.set(v, (counts.get(v) || 0) + 1);
+});
+const list = facetLists[field];
+list.replaceChildren();
+[...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).forEach(([value, count]) => {
+const li = document.createElement('li');
+const label = document.createElement('label');
+const cb = Object.assign(document.createElement('input'), { type: 'checkbox' });
+cb.checked = filters[field].has(value);
+cb.addEventListener('change', () => {
+if (cb.checked) filters[field].add(value); else filters[field].delete(value);
+page = 0;
+save();
+render();
+});
+const countEl = document.createElement('span');
+countEl.className = 'exp-count-badge';
+countEl.textContent = `(${count})`;
+label.append(cb, document.createTextNode(` ${value} `), countEl);
+li.append(label);
+list.append(li);
+});
+});
+};
+const renderRows = (filtered, slice) => {
+tbody.replaceChildren();
+slice.forEach(row => {
+const tr = document.createElement('tr');
+const idx = idxOf.get(row);
+columns.forEach(col => { const td = document.createElement('td'); td.textContent = String(row[col] ?? ''); tr.append(td); });
+tr.addEventListener('click', () => { expanded.has(idx) ? expanded.delete(idx) : expanded.add(idx); render(); });
+tbody.append(tr);
+if (expanded.has(idx)) {
+const detailTr = document.createElement('tr');
+detailTr.className = 'exp-detail-row';
+detailTr.dataset.ui = '';
+const td = document.createElement('td');
+td.colSpan = columns.length;
+const dl = document.createElement('dl');
+dl.className = 'exp-detail';
+columns.forEach(c => {
+const dt = document.createElement('dt'); dt.textContent = c;
+const dd = document.createElement('dd'); dd.textContent = String(row[c] ?? '');
+dl.append(dt, dd);
+});
+td.append(dl);
+detailTr.append(td);
+tbody.append(detailTr);
+}
+});
+};
+const renderHistogram = filtered => {
+if (!timeField) return;
+histoWrap.replaceChildren();
+const dayOf = row => { const d = new Date(row[timeField]); return isNaN(d) ? null : d.toISOString().slice(0, 10); };
+const allDays = [...new Set(rows.map(dayOf).filter(Boolean))].sort();
+if (!allDays.length) return;
+const counts = new Map(allDays.map(d => [d, 0]));
+filtered.forEach(r => { const d = dayOf(r); if (d && counts.has(d)) counts.set(d, counts.get(d) + 1); });
+const max = Math.max(1, ...counts.values());
+const w = 600, h = 48, bw = w / allDays.length;
+const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+svg.setAttribute('role', 'img');
+svg.setAttribute('aria-label', `Rows per day, ${allDays[0]} to ${allDays[allDays.length - 1]}`);
+allDays.forEach((d, i) => {
+const c = counts.get(d);
+const barH = (c / max) * (h - 2);
+const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+rect.setAttribute('x', String(i * bw + 0.5));
+rect.setAttribute('y', String(h - barH));
+rect.setAttribute('width', String(Math.max(1, bw - 1)));
+rect.setAttribute('height', String(barH));
+rect.setAttribute('class', 'exp-histo-bar');
+svg.append(rect);
+});
+histoWrap.append(svg);
+};
+const render = () => {
+let filtered = rows.filter(matchesAll);
+if (sortField) {
+filtered = [...filtered].sort((a, b) => {
+const x = a[sortField], y = b[sortField];
+const nx = numOf(x), ny = numOf(y);
+const cmp = nx !== null && ny !== null ? nx - ny : String(x ?? '').localeCompare(String(y ?? ''));
+return cmp * sortDir;
+});
+}
+lastFiltered = filtered;
+countP.textContent = `${filtered.length} of ${rows.length} rows — the full dataset is embedded in this file.`;
+renderFacets();
+const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+page = Math.min(page, totalPages - 1);
+renderRows(filtered, filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE));
+pageLabel.textContent = `Page ${page + 1} of ${totalPages}`;
+prevBtn.disabled = page === 0;
+nextBtn.disabled = page >= totalPages - 1;
+renderHistogram(filtered);
+};
+const save = () => HA.changed(`explorer:${id}`);
+search_.addEventListener('input', () => { search = search_.value.trim().toLowerCase(); page = 0; save(); render(); });
+prevBtn.addEventListener('click', () => { page = Math.max(0, page - 1); render(); });
+nextBtn.addEventListener('click', () => { page += 1; render(); });
+csvBtn.addEventListener('click', async () => {
+try { await navigator.clipboard.writeText(toCSV(lastFiltered, columns)); csvBtn.textContent = 'Copied'; } catch { csvBtn.textContent = 'Copy failed'; }
+setTimeout(() => { csvBtn.textContent = 'Copy CSV'; }, 1200);
+});
+sqlBtn.addEventListener('click', async () => {
+try { await navigator.clipboard.writeText(sqlWhere()); sqlBtn.textContent = 'Copied'; } catch { sqlBtn.textContent = 'Copy failed'; }
+setTimeout(() => { sqlBtn.textContent = 'Copy as SQL WHERE'; }, 1200);
+});
+headRow.querySelectorAll('th').forEach((th, i) => {
+const col = columns[i];
+const sort = () => {
+sortDir = sortField === col ? -sortDir : 1;
+sortField = col;
+headRow.querySelectorAll('th').forEach(x => x.removeAttribute('aria-sort'));
+th.setAttribute('aria-sort', sortDir > 0 ? 'ascending' : 'descending');
+page = 0;
+render();
+};
+th.addEventListener('click', sort);
+th.addEventListener('keydown', e => { if (e.key === 'Enter') sort(); });
+});
+HA.register(`explorer:${id}`, {
+state: () => ({ filters: Object.fromEntries(facetFields.map(f => [f, [...filters[f]]])), search: search_.value }),
+restore: saved => {
+facetFields.forEach(f => { filters[f] = new Set((saved.filters && saved.filters[f]) || []); });
+search = (saved.search || '').trim().toLowerCase();
+search_.value = saved.search || '';
+render();
+},
+summary: () => summaryText(),
+});
+render();
+HA.explorer = HA.explorer || new Map();
+HA.explorer.set(id, { csv: () => toCSV(lastFiltered, columns), sql: () => sqlWhere() });
+});
+})();</script>
+<script data-component="mindmap">(() => {
+const HA = window.HA;
+const ui = n => { n.dataset.ui = ''; return n; };
+const el = (tag, cls, text) => {
+const n = document.createElement(tag);
+if (cls) n.className = cls;
+if (text !== undefined) n.textContent = text;
+return n;
+};
+const MARKS = [null, 'keep', 'maybe', 'drop'];
+const markLabel = m => (m ? m[0].toUpperCase() + m.slice(1) : 'Mark');
+document.querySelectorAll('ul.mindmap').forEach((root, idx) => {
+const id = root.dataset.id || `mindmap-${idx}`;
+const name = `mindmap:${id}`;
+let undoSlot = null;
+const ownerLi = ul => (ul.parentElement.tagName === 'LI' ? ul.parentElement : null);
+function updateToggle(li) {
+const childUl = li.querySelector(':scope > ul');
+const has = !!(childUl && childUl.children.length);
+const toggle = li.querySelector(':scope > .row > .toggle');
+toggle.hidden = !has;
+if (has) toggle.textContent = childUl.hidden ? '▸' : '▾';
+}
+function startEdit(label) {
+label.dataset.before = label.textContent;
+label.contentEditable = 'true';
+label.focus();
+const range = document.createRange();
+range.selectNodeContents(label);
+const sel = window.getSelection();
+sel.removeAllRanges();
+sel.addRange(range);
+}
+function cancelEdit(label) {
+label.textContent = label.dataset.before;
+label.contentEditable = 'false';
+}
+function commitEdit(label) {
+if (label.contentEditable !== 'true') return;
+label.contentEditable = 'false';
+const text = label.textContent.trim() || label.dataset.before || 'Idea';
+const changed = text !== label.dataset.before;
+label.textContent = text;
+delete label.dataset.before;
+if (changed) HA.changed(name);
+}
+function enhanceLi(li) {
+if (li.querySelector(':scope > .row')) return;
+const childUl = li.querySelector(':scope > ul');
+let text = '';
+[...li.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) text += n.textContent; });
+[...li.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) li.removeChild(n); });
+const toggle = ui(el('button', 'toggle'));
+toggle.type = 'button';
+toggle.setAttribute('aria-label', 'Collapse or expand');
+toggle.addEventListener('click', () => {
+childUl.hidden = !childUl.hidden;
+toggle.textContent = childUl.hidden ? '▸' : '▾';
+});
+const label = el('span', 'label', text.trim());
+label.tabIndex = 0;
+label.contentEditable = 'false';
+const mark = ui(el('button', 'mark', markLabel(li.dataset.tone || null)));
+mark.type = 'button';
+mark.setAttribute('aria-label', 'Cycle keep, maybe, drop mark');
+mark.addEventListener('click', () => {
+const next = MARKS[(MARKS.indexOf(li.dataset.tone || null) + 1) % MARKS.length];
+if (next) li.dataset.tone = next; else delete li.dataset.tone;
+mark.textContent = markLabel(next);
+HA.changed(name);
+});
+const addChildBtn = el('button', 'add-child', '+ child');
+const addSiblingBtn = el('button', 'add-sibling', '+ sibling');
+const deleteBtn = el('button', 'delete', 'Delete');
+[addChildBtn, addSiblingBtn, deleteBtn].forEach(b => { b.type = 'button'; });
+addChildBtn.addEventListener('click', () => addChild(li));
+addSiblingBtn.addEventListener('click', () => addSibling(li));
+deleteBtn.addEventListener('click', () => removeNode(li));
+const controls = ui(el('div', 'controls'));
+controls.append(mark, addChildBtn, addSiblingBtn, deleteBtn);
+const row = el('div', 'row');
+row.append(toggle, label, controls);
+li.prepend(row);
+updateToggle(li);
+if (childUl) [...childUl.children].forEach(enhanceLi);
+}
+const newLi = text => {
+const li = document.createElement('li');
+li.append(document.createTextNode(text));
+return li;
+};
+function addChild(li) {
+let childUl = li.querySelector(':scope > ul');
+if (!childUl) { childUl = document.createElement('ul'); li.append(childUl); }
+const nli = newLi('New idea');
+childUl.append(nli);
+enhanceLi(nli);
+updateToggle(li);
+HA.changed(name);
+startEdit(nli.querySelector(':scope > .row > .label'));
+}
+function addSibling(li) {
+const nli = newLi('New idea');
+li.after(nli);
+enhanceLi(nli);
+const owner = ownerLi(li.parentElement);
+if (owner) updateToggle(owner);
+HA.changed(name);
+startEdit(nli.querySelector(':scope > .row > .label'));
+}
+function removeNode(li) {
+const parentUl = li.parentElement;
+undoSlot = { parentUl, li, next: li.nextSibling };
+parentUl.removeChild(li);
+const owner = ownerLi(parentUl);
+if (owner) updateToggle(owner);
+undoBtn.disabled = false;
+HA.changed(name);
+}
+function undoDelete() {
+if (!undoSlot) return;
+const { parentUl, li, next } = undoSlot;
+parentUl.insertBefore(li, next);
+const owner = ownerLi(parentUl);
+if (owner) updateToggle(owner);
+undoSlot = null;
+undoBtn.disabled = true;
+HA.changed(name);
+}
+function indent(li) {
+const prev = li.previousElementSibling;
+if (!prev) return;
+let childUl = prev.querySelector(':scope > ul');
+if (!childUl) { childUl = document.createElement('ul'); prev.append(childUl); }
+const oldOwner = ownerLi(li.parentElement);
+childUl.append(li);
+updateToggle(prev);
+if (oldOwner) updateToggle(oldOwner);
+HA.changed(name);
+}
+function outdent(li) {
+const parentUl = li.parentElement;
+const parentLi = ownerLi(parentUl);
+if (!parentLi) return;
+parentLi.after(li);
+updateToggle(parentLi);
+const grandOwner = ownerLi(parentLi.parentElement);
+if (grandOwner) updateToggle(grandOwner);
+HA.changed(name);
+}
+function move(li, dir) {
+const sib = dir < 0 ? li.previousElementSibling : li.nextElementSibling;
+if (!sib) return;
+dir < 0 ? sib.before(li) : sib.after(li);
+HA.changed(name);
+}
+[...root.children].forEach(enhanceLi);
+const tools = el('div', 'mindmap-tools');
+const undoBtn = el('button', '', 'Undo delete');
+undoBtn.type = 'button';
+undoBtn.disabled = true;
+undoBtn.addEventListener('click', undoDelete);
+tools.append(undoBtn);
+root.before(tools);
+root.addEventListener('dblclick', e => {
+const label = e.target.closest('.label');
+if (label) startEdit(label);
+});
+root.addEventListener('focusout', e => {
+const label = e.target.closest?.('.label');
+if (label) commitEdit(label);
+});
+root.addEventListener('keydown', e => {
+const label = e.target.closest('.label');
+if (!label) return;
+const li = label.closest('li');
+if (e.key === 'Enter') {
+e.preventDefault();
+if (label.contentEditable === 'true') label.blur();
+else startEdit(label);
+} else if (e.key === 'Escape' && label.contentEditable === 'true') {
+e.preventDefault();
+cancelEdit(label);
+label.blur();
+} else if (e.key === 'Tab') {
+e.preventDefault();
+if (e.shiftKey) outdent(li); else indent(li);
+label.focus();
+} else if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+e.preventDefault();
+move(li, e.key === 'ArrowUp' ? -1 : 1);
+label.focus();
+}
+});
+function serializeLi(li) {
+const label = li.querySelector(':scope > .row > .label');
+const childUl = li.querySelector(':scope > ul');
+return {
+text: label.textContent.trim(),
+mark: li.dataset.tone || null,
+children: childUl ? [...childUl.children].map(serializeLi) : [],
+};
+}
+const countNodes = list => list.reduce((n, c) => n + 1 + countNodes(c.children), 0);
+const countDropped = list => list.reduce((n, c) => n + (c.mark === 'drop' ? 1 : 0) + countDropped(c.children), 0);
+function buildLi(node) {
+const li = newLi(node.text || '');
+if (node.mark) li.dataset.tone = node.mark;
+if (node.children && node.children.length) {
+const childUl = document.createElement('ul');
+node.children.forEach(c => childUl.append(buildLi(c)));
+li.append(childUl);
+}
+return li;
+}
+HA.register(name, {
+state: () => [...root.children].map(serializeLi),
+restore: tree => {
+root.replaceChildren(...tree.map(buildLi));
+[...root.children].forEach(enhanceLi);
+},
+summary: () => {
+const tree = [...root.children].map(serializeLi);
+return `${countNodes(tree)} nodes · ${countDropped(tree)} dropped`;
+},
+});
+});
+})();</script>
+<script data-component="playground">(() => {
+const HA = window.HA;
+document.querySelectorAll('form.playground').forEach(form => {
+const id = form.dataset.id || 'playground';
+const name = `playground:${id}`;
+const target = (form.dataset.target && document.querySelector(form.dataset.target)) || form;
+const inputs = [...form.querySelectorAll('input[name], select[name]')];
+const isCheckbox = input => input.type === 'checkbox';
+const defaultOf = input => {
+if (isCheckbox(input)) return input.defaultChecked;
+if (input.tagName === 'SELECT') return [...input.options].find(o => o.defaultSelected)?.value ?? input.options[0]?.value ?? '';
+return input.defaultValue + (input.dataset.unit || '');
+};
+const currentOf = input => {
+if (isCheckbox(input)) return input.checked;
+return input.value + (input.tagName === 'SELECT' ? '' : (input.dataset.unit || ''));
+};
+const defaults = Object.fromEntries(inputs.map(i => [i.name, defaultOf(i)]));
+const readouts = new Map(inputs.map(input => {
+const readout = document.createElement('span');
+readout.className = 'readout';
+readout.dataset.ui = '';
+input.after(readout);
+return [input.name, readout];
+}));
+const values = () => Object.fromEntries(inputs.map(i => [i.name, currentOf(i)]));
+const apply = () => {
+inputs.forEach(input => {
+const value = currentOf(input);
+target.style.setProperty(`--${input.name}`, isCheckbox(input) ? (value ? '1' : '0') : value);
+readouts.get(input.name).textContent = isCheckbox(input) ? (value ? 'on' : 'off') : String(value);
+input.closest('label')?.classList.toggle('changed', value !== defaults[input.name]);
+});
+};
+const summary = () => {
+const changed = inputs.filter(input => currentOf(input) !== defaults[input.name]);
+if (!changed.length) return 'defaults';
+return changed.map(input => `${input.name} ${defaults[input.name]} → ${currentOf(input)}`).join(', ');
+};
+const changed = () => { apply(); HA.changed(name); };
+HA.register(name, {
+state: () => ({ values: values() }),
+restore: s => {
+const saved = s.values || {};
+inputs.forEach(input => {
+if (!(input.name in saved)) return;
+if (isCheckbox(input)) input.checked = !!saved[input.name];
+else if (input.tagName === 'SELECT') input.value = saved[input.name];
+else input.value = parseFloat(saved[input.name]);
+});
+apply();
+},
+summary,
+});
+form.addEventListener('input', changed);
+form.addEventListener('reset', () => setTimeout(changed));
+form.querySelectorAll('[data-preset]').forEach(btn => {
+btn.addEventListener('click', () => {
+const preset = JSON.parse(btn.dataset.preset);
+Object.entries(preset).forEach(([key, value]) => {
+const input = form.elements.namedItem(key);
+if (!input) return;
+if (isCheckbox(input)) input.checked = !!value; else input.value = value;
+});
+changed();
+});
+});
+const copyBtn = form.querySelector('[data-action="copy"]');
+if (copyBtn) copyBtn.addEventListener('click', async () => {
+const v = values();
+const css = ['{', ...Object.entries(v).map(([k, val]) => `  --${k}: ${typeof val === 'boolean' ? (val ? 1 : 0) : val};`), '}'].join('\n');
+const text = `${JSON.stringify(v, null, 2)}\n\n${css}`;
+try { await navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied'; } catch { copyBtn.textContent = 'Copy failed'; }
+setTimeout(() => { copyBtn.textContent = 'Copy values'; }, 1200);
+});
+apply();
+});
+})();</script>
+<script data-component="table">(() => {
+const HA = window.HA;
+const num = s => { const t = s.replace(/[$,%\s]/g, ''); return t !== '' && !isNaN(t) ? +t : null; };
+const cell = c => c.textContent.trim();
+const quote = v => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+const csv = table => [table.tHead.rows[0], ...[...table.tBodies[0].rows].filter(r => !r.hidden)]
+.map(r => [...r.cells].map(c => quote(cell(c).replace(/\s*[↑↓]$/, ''))).join(',')).join('\n');
+document.querySelectorAll('table[data-sortable]').forEach(table => {
+const body = table.tBodies[0];
+const rows = [...body.rows];
+const tools = document.createElement('div');
+tools.className = 'table-tools';
+tools.dataset.ui = '';
+const filter = Object.assign(document.createElement('input'), { type: 'search', placeholder: 'Filter rows' });
+filter.setAttribute('aria-label', 'Filter rows');
+const count = Object.assign(document.createElement('span'), { className: 'count' });
+count.setAttribute('aria-live', 'polite');
+const copy = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Copy CSV' });
+tools.append(filter, count, copy);
+table.before(tools);
+const show = () => {
+const q = filter.value.trim().toLowerCase();
+let n = 0;
+rows.forEach(r => { const hit = !q || r.textContent.toLowerCase().includes(q); r.hidden = !hit; n += hit; });
+count.textContent = `${n} of ${rows.length} rows`;
+};
+filter.addEventListener('input', show);
+copy.addEventListener('click', async () => {
+try { await navigator.clipboard.writeText(csv(table)); copy.textContent = 'Copied'; } catch { copy.textContent = 'Copy failed'; }
+setTimeout(() => { copy.textContent = 'Copy CSV'; }, 1200);
+});
+[...table.tHead.rows[0].cells].forEach((th, k) => {
+th.tabIndex = 0;
+const sort = () => {
+const dir = th.getAttribute('aria-sort') === 'ascending' ? -1 : 1;
+[...table.tHead.rows[0].cells].forEach(x => x.removeAttribute('aria-sort'));
+th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
+const key = r => { const t = cell(r.cells[k]); const v = num(t); return v === null ? t.toLowerCase() : v; };
+rows.sort((a, b) => { const x = key(a), y = key(b); return (x > y ? 1 : x < y ? -1 : 0) * dir; }).forEach(r => body.append(r));
+};
+th.addEventListener('click', sort);
+th.addEventListener('keydown', e => { if (e.key === 'Enter') sort(); });
+});
+show();
+});
+document.querySelectorAll('table.matrix').forEach(table => {
+const head = [...table.tHead.rows[0].cells];
+const weighted = head.map((th, i) => [th, i]).filter(([th]) => th.dataset.weight !== undefined);
+const rows = [...table.tBodies[0].rows];
+const verdict = table.nextElementSibling?.matches('p.verdict') ? table.nextElementSibling : null;
+weighted.forEach(([th]) => {
+const label = th.textContent.trim();
+const range = Object.assign(document.createElement('input'), { type: 'range', min: 0, max: 10, value: th.dataset.weight });
+range.setAttribute('aria-label', `Weight: ${label}`);
+const w = Object.assign(document.createElement('span'), { className: 'weight' });
+w.dataset.ui = '';
+th.append(w, range);
+});
+const update = () => {
+const ws = weighted.map(([th]) => +th.querySelector('input').value);
+const sum = ws.reduce((a, b) => a + b, 0) || 1;
+weighted.forEach(([th], j) => { th.querySelector('.weight').textContent = `${Math.round((100 * ws[j]) / sum)}%`; });
+const totals = rows.map(r => {
+const t = weighted.reduce((acc, [, i], j) => acc + ws[j] * (num(cell(r.cells[i])) ?? 0), 0) / sum;
+const c = r.querySelector('td.total');
+if (c) c.textContent = t.toFixed(1);
+return t;
+});
+const best = totals.indexOf(Math.max(...totals));
+rows.forEach((r, i) => r.classList.toggle('win', i === best));
+if (verdict) {
+const names = weighted.map(([th], j) => `${th.firstChild.textContent.trim()} ${Math.round((100 * ws[j]) / sum)}%`);
+verdict.textContent = `With weights ${names.join(', ')}, ${cell(rows[best].cells[0])} wins at ${totals[best].toFixed(1)}.`;
+}
+};
+table.addEventListener('input', update);
+update();
+});
+HA.table = { csv };
+})();</script>
+<script data-component="testplan">(() => {
+const HA = window.HA;
+const STATES = ['pending', 'pass', 'fail', 'blocked', 'skipped'];
+const LABEL = { pending: 'Pending', pass: 'Pass', fail: 'Fail', blocked: 'Blocked', skipped: 'Skip' };
+const BAR_STATES = ['pass', 'fail', 'blocked', 'skipped'];
+const fieldText = (step, label) => {
+const dts = [...step.querySelectorAll('dl > dt')];
+const dt = dts.find(d => d.textContent.trim() === label);
+return dt && dt.nextElementSibling ? dt.nextElementSibling.textContent.trim() : '';
+};
+const instances = [];
+document.querySelectorAll('.testplan').forEach((root, n) => {
+const id = root.dataset.id || root.id || String(n);
+const flows = [...root.querySelectorAll('.tp-flow')];
+const steps = [...root.querySelectorAll('.tp-step')];
+steps.forEach((step, i) => { if (!step.dataset.id) step.dataset.id = `step-${i}`; });
+const progress = document.createElement('div');
+progress.className = 'tp-progress';
+progress.dataset.ui = '';
+const track = document.createElement('div');
+track.className = 'tp-bar';
+const fills = {};
+BAR_STATES.forEach(s => { fills[s] = document.createElement('span'); fills[s].className = `tp-fill tp-${s}`; track.append(fills[s]); });
+const summaryLine = document.createElement('p');
+summaryLine.className = 'tp-summary';
+summaryLine.setAttribute('aria-live', 'polite');
+progress.append(track, summaryLine);
+const toolbar = document.createElement('div');
+toolbar.className = 'tp-toolbar';
+toolbar.dataset.ui = '';
+const search = Object.assign(document.createElement('input'), { type: 'search', placeholder: 'Search steps' });
+search.setAttribute('aria-label', 'Search steps');
+const hideLabel = document.createElement('label');
+const hideBox = Object.assign(document.createElement('input'), { type: 'checkbox' });
+hideLabel.append(hideBox, document.createTextNode(' Hide resolved'));
+toolbar.append(search, hideLabel);
+root.prepend(toolbar, progress);
+const flowBars = flows.map(flow => {
+const title = document.createElement('p');
+title.className = 'tp-flow-title';
+title.dataset.ui = '';
+const minutes = flow.dataset.minutes ? ` · ${flow.dataset.minutes} min` : '';
+title.textContent = `${flow.dataset.title || ''}${minutes}`;
+const bar = document.createElement('div');
+bar.className = 'tp-bar tp-bar-sm';
+bar.dataset.ui = '';
+const fs = {};
+BAR_STATES.forEach(s => { fs[s] = document.createElement('span'); fs[s].className = `tp-fill tp-${s}`; bar.append(fs[s]); });
+const label = document.createElement('span');
+label.className = 'tp-flow-summary';
+label.dataset.ui = '';
+const head = document.createElement('div');
+head.className = 'tp-flow-head';
+head.dataset.ui = '';
+head.append(title, label);
+flow.prepend(head, bar);
+return { flow, fills: fs, label };
+});
+const stepState = new Map();
+const setters = new Map();
+const summarize = ids => {
+const c = { total: ids.length, pass: 0, fail: 0, blocked: 0, skipped: 0, pending: 0 };
+ids.forEach(id => c[stepState.get(id).status]++);
+return c;
+};
+const fillBar = (fillEls, c) => {
+const total = c.total || 1;
+BAR_STATES.forEach(s => { fillEls[s].style.width = `${(100 * c[s]) / total}%`; });
+};
+const summaryText = c => `${c.total - c.pending}/${c.total} resolved · ${c.fail} fail · ${c.blocked} blocked`;
+const refresh = () => {
+const allIds = steps.map(s => s.dataset.id);
+const c = summarize(allIds);
+fillBar(fills, c);
+summaryLine.textContent = summaryText(c);
+flowBars.forEach(({ flow, fills: fs, label }) => {
+const ids = [...flow.querySelectorAll('.tp-step')].map(s => s.dataset.id);
+const fc = summarize(ids);
+fillBar(fs, fc);
+label.textContent = `${fc.total - fc.pending}/${fc.total}`;
+});
+};
+const applyFilter = () => {
+const q = search.value.trim().toLowerCase();
+const hide = hideBox.checked;
+steps.forEach(step => {
+const matches = !q || step.textContent.toLowerCase().includes(q);
+const resolved = stepState.get(step.dataset.id).status !== 'pending';
+step.hidden = !matches || (hide && resolved);
+});
+};
+const save = () => HA.changed(`testplan:${id}`);
+steps.forEach(step => {
+const sid = step.dataset.id;
+stepState.set(sid, { status: 'pending', notes: '' });
+const control = document.createElement('div');
+control.className = 'tp-control';
+control.dataset.ui = '';
+control.setAttribute('role', 'group');
+control.setAttribute('aria-label', 'Step state');
+const buttons = {};
+STATES.forEach(s => {
+const b = document.createElement('button');
+b.type = 'button';
+b.textContent = LABEL[s];
+b.setAttribute('aria-pressed', String(s === 'pending'));
+buttons[s] = b;
+control.append(b);
+});
+const notes = document.createElement('textarea');
+notes.className = 'tp-notes';
+notes.dataset.ui = '';
+notes.placeholder = 'Notes';
+notes.hidden = true;
+notes.setAttribute('aria-label', 'Step notes');
+step.append(control, notes);
+const setStatus = status => {
+stepState.get(sid).status = status;
+step.dataset.status = status;
+STATES.forEach(s => buttons[s].setAttribute('aria-pressed', String(s === status)));
+notes.hidden = status !== 'fail' && status !== 'blocked';
+refresh();
+applyFilter();
+save();
+};
+STATES.forEach(s => buttons[s].addEventListener('click', () => setStatus(s)));
+notes.addEventListener('input', () => { stepState.get(sid).notes = notes.value; save(); });
+setters.set(sid, setStatus);
+});
+search.addEventListener('input', applyFilter);
+hideBox.addEventListener('change', applyFilter);
+HA.register(`testplan:${id}`, {
+state: () => ({
+results: steps.map(step => {
+const s = stepState.get(step.dataset.id);
+return { id: step.dataset.id, flow: step.closest('.tp-flow')?.dataset.title || '', step: fieldText(step, 'Action'), status: s.status, notes: s.notes };
+}),
+summary: summarize(steps.map(s => s.dataset.id)),
+}),
+restore: saved => {
+(saved.results || []).forEach(r => {
+if (!stepState.has(r.id)) return;
+stepState.set(r.id, { status: r.status, notes: r.notes || '' });
+setters.get(r.id)(r.status);
+const notes = steps.find(s => s.dataset.id === r.id).querySelector('.tp-notes');
+notes.value = r.notes || '';
+});
+},
+summary: () => summaryText(summarize(steps.map(s => s.dataset.id))),
+});
+refresh();
+applyFilter();
+instances.push({ root, steps, current: 0, setters });
+});
+document.addEventListener('keydown', e => {
+if (!instances.length) return;
+const tag = (e.target.tagName || '').toLowerCase();
+if (e.key === '/' && tag !== 'input' && tag !== 'textarea') {
+const inst = instances.find(i => i.root.contains(e.target)) || instances[0];
+e.preventDefault();
+inst.root.querySelector('.tp-toolbar input[type=search]').focus();
+return;
+}
+if (tag === 'input' || tag === 'textarea') return;
+const inst = instances.find(i => i.root.contains(e.target)) || instances[0];
+const visible = () => inst.steps.filter(s => !s.hidden);
+if (e.key === 'j' || e.key === 'k') {
+const vis = visible();
+if (!vis.length) return;
+vis.forEach(s => s.classList.remove('tp-current'));
+inst.current = Math.max(0, Math.min(inst.current + (e.key === 'j' ? 1 : -1), vis.length - 1));
+vis[inst.current].classList.add('tp-current');
+vis[inst.current].scrollIntoView({ block: 'nearest' });
+return;
+}
+const map = { p: 'pass', f: 'fail', b: 'blocked', s: 'skipped' };
+if (map[e.key]) {
+const vis = visible();
+const step = vis[inst.current];
+if (step) inst.setters.get(step.dataset.id)(map[e.key]);
+}
+});
+})();</script>
+<script data-component="timeline">(() => {
+const day = s => Date.parse(`${s}T00:00:00Z`);
+document.querySelectorAll('.roadmap').forEach(road => {
+const start = day(road.dataset.start), end = day(road.dataset.end);
+const pct = t => `${Math.max(0, Math.min(100, ((t - start) / (end - start)) * 100))}%`;
+const inner = document.createElement('div');
+inner.className = 'inner';
+inner.append(...road.children);
+road.append(inner);
+const axis = document.createElement('div');
+axis.className = 'axis';
+axis.dataset.ui = '';
+const months = [];
+for (let d = new Date(start); d.getTime() <= end; d.setUTCMonth(d.getUTCMonth() + 1, 1)) months.push(new Date(d));
+axis.style.gridTemplateColumns = months.map(m => {
+const next = Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1);
+return `${(Math.min(next, end) - Math.max(m.getTime(), start)) / 864e5}fr`;
+}).join(' ');
+axis.append(...months.map(m => Object.assign(document.createElement('span'), {
+textContent: m.toLocaleString('en', { month: 'short', timeZone: 'UTC' }) + (m.getUTCMonth() === 0 ? ` ${m.getUTCFullYear()}` : ''),
+})));
+inner.prepend(axis);
+inner.querySelectorAll('.lane > span').forEach(bar => {
+const a = day(bar.dataset.start), b = day(bar.dataset.end);
+bar.style.left = pct(a);
+bar.style.width = `calc(${pct(b)} - ${pct(a)})`;
+bar.title = `${bar.textContent.trim()}: ${bar.dataset.start} → ${bar.dataset.end}`;
+});
+if (road.dataset.today) {
+const today = document.createElement('div');
+today.className = 'today';
+today.dataset.ui = '';
+today.style.left = `calc(110px + (100% - 110px) * ${parseFloat(pct(day(road.dataset.today))) / 100})`;
+inner.append(today);
+}
+});
+})();</script>
+<script data-component="variants">(() => {
+const HA = window.HA;
+document.querySelectorAll('.variants').forEach(grid => {
+const id = grid.dataset.id || 'variants';
+const name = `variants:${id}`;
+const articles = [...grid.querySelectorAll('.variant')];
+const state = { picked: null, shortlisted: [], rejected: [], notes: {} };
+const toggleIn = (list, vid) => { const i = list.indexOf(vid); i === -1 ? list.push(vid) : list.splice(i, 1); };
+articles.forEach(a => {
+const vid = a.dataset.id;
+const toolbar = document.createElement('div');
+toolbar.className = 'variant-toolbar';
+toolbar.dataset.ui = '';
+const pick = document.createElement('button');
+pick.type = 'button'; pick.dataset.action = 'pick'; pick.dataset.ui = ''; pick.textContent = 'Pick';
+const star = document.createElement('button');
+star.type = 'button'; star.dataset.action = 'shortlist'; star.dataset.ui = ''; star.textContent = '☆ Shortlist';
+const reject = document.createElement('button');
+reject.type = 'button'; reject.dataset.action = 'reject'; reject.dataset.ui = ''; reject.textContent = 'Reject';
+pick.addEventListener('click', () => { state.picked = state.picked === vid ? null : vid; HA.changed(name); render(); });
+star.addEventListener('click', () => { toggleIn(state.shortlisted, vid); HA.changed(name); render(); });
+reject.addEventListener('click', () => { toggleIn(state.rejected, vid); HA.changed(name); render(); });
+toolbar.append(pick, star, reject);
+const notesLabel = document.createElement('label');
+notesLabel.className = 'variant-notes';
+notesLabel.dataset.ui = '';
+notesLabel.append('Notes');
+const textarea = document.createElement('textarea');
+textarea.rows = 2;
+textarea.dataset.ui = '';
+textarea.addEventListener('input', () => { state.notes[vid] = textarea.value; HA.changed(name); });
+notesLabel.append(textarea);
+a.append(toolbar, notesLabel);
+});
+const tools = document.createElement('div');
+tools.className = 'variants-tools';
+tools.dataset.ui = '';
+const compareBtn = document.createElement('button');
+compareBtn.type = 'button'; compareBtn.dataset.ui = ''; compareBtn.textContent = 'Compare shortlisted';
+const hint = document.createElement('p');
+hint.className = 'variants-hint';
+hint.dataset.ui = '';
+tools.append(compareBtn, hint);
+grid.before(tools);
+let comparing = false;
+function render() {
+articles.forEach(a => {
+const vid = a.dataset.id;
+a.classList.toggle('picked', state.picked === vid);
+a.classList.toggle('shortlisted', state.shortlisted.includes(vid));
+a.classList.toggle('rejected', state.rejected.includes(vid));
+a.querySelector('[data-action="pick"]').setAttribute('aria-pressed', state.picked === vid);
+a.querySelector('[data-action="shortlist"]').setAttribute('aria-pressed', state.shortlisted.includes(vid));
+a.querySelector('[data-action="reject"]').setAttribute('aria-pressed', state.rejected.includes(vid));
+});
+const twoShortlisted = state.shortlisted.length === 2;
+grid.classList.toggle('comparing', comparing && twoShortlisted);
+hint.textContent = comparing && !twoShortlisted ? 'Shortlist exactly two variants to compare.' : '';
+articles.forEach(a => { a.hidden = comparing && twoShortlisted && !state.shortlisted.includes(a.dataset.id); });
+}
+compareBtn.addEventListener('click', () => {
+comparing = !comparing;
+compareBtn.setAttribute('aria-pressed', comparing);
+render();
+});
+HA.register(name, {
+state: () => ({ picked: state.picked, shortlisted: [...state.shortlisted], rejected: [...state.rejected], notes: { ...state.notes } }),
+restore: s => {
+state.picked = s.picked ?? null;
+state.shortlisted = s.shortlisted ?? [];
+state.rejected = s.rejected ?? [];
+state.notes = s.notes ?? {};
+articles.forEach(a => { a.querySelector('textarea').value = state.notes[a.dataset.id] || ''; });
+render();
+},
+summary: () => {
+const parts = [];
+if (state.picked) parts.push(`picked ${state.picked}`);
+if (state.shortlisted.length) parts.push(`shortlisted ${state.shortlisted.join(', ')}`);
+if (state.rejected.length) parts.push(`rejected ${state.rejected.join(', ')}`);
+return parts.length ? parts.join(' · ') : 'no decisions yet';
+},
+});
+render();
+});
+})();</script>
+</body>
+</html>

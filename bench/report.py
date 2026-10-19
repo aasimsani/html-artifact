@@ -13,7 +13,7 @@ from html import escape
 from pathlib import Path
 
 OUT = Path(__file__).parent / "runs" / "out"
-ARMS = ["original", "baseline", "ours", "v2", "dogum", "flabs"]
+ARMS = ["original", "baseline", "ours", "v2", "v21", "dogum", "flabs"]
 GRADERS = ["fidelity", "design", "reviewable", "offline", "grounded", "review-shape"]
 
 

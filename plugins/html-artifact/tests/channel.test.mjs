@@ -102,3 +102,54 @@ test('listen.sh starts one receiver per session and reports it again on a second
     assert.ok(await waitFor(() => readFileSync(first.LOG, 'utf8').includes('HTML_ARTIFACT_SUBMIT')));
   } finally { process.kill(+pid); }
 });
+
+// Opens an SSE stream to the receiver and collects data lines.
+const sse = async target => {
+  const res = await fetch(target.replace('/?', '/events?'));
+  const reader = res.body.getReader();
+  const events = [];
+  (async () => {
+    const dec = new TextDecoder();
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      for (const m of dec.decode(value).matchAll(/^data: (.*)$/gm)) events.push(JSON.parse(m[1]));
+    }
+  })().catch(() => {});
+  return { events, close: () => reader.cancel() };
+};
+
+test('a build with a submit url announces the rewritten page to listeners', async () => {
+  const { mkdtempSync, writeFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { tmpdir } = await import('node:os');
+  const BUILD = new URL('../skills/html-artifact/scripts/build.mjs', import.meta.url).pathname;
+  const dir = mkdtempSync(join(tmpdir(), 'live-'));
+  writeFileSync(join(dir, 'p.src.html'), doc('<p>Live page.</p>'));
+  const stream = await sse(url);
+  const { execFileSync } = await import('node:child_process');
+  execFileSync('node', [BUILD, join(dir, 'p.src.html')], { env: { ...process.env, HTML_ARTIFACT_SUBMIT_URL: url } });
+  assert.ok(await waitFor(() => stream.events.some(e => e.type === 'built' && e.path === join(dir, 'p.html'))), JSON.stringify(stream.events));
+  stream.close();
+});
+
+test('an open page reloads itself when its file is rebuilt, and keeps its scroll position', async () => {
+  const { writeFileSync } = await import('node:fs');
+  process.env.HTML_ARTIFACT_SUBMIT_URL = url;
+  const long = doc(Array(40).fill('<p>Filler paragraph that makes the page long enough to scroll a good distance down.</p>').join('\n'));
+  const fx = fixture(long);
+  const p = await browser.open(fx.url);
+  await p.eval(`window.scrollTo(0, 900); window.__before = 1; new Promise(r => setTimeout(r, 400))`);
+  writeFileSync(fx.file, build(long.replace('Section one.', 'Section one, edited.')));
+  delete process.env.HTML_ARTIFACT_SUBMIT_URL;
+  await fetch(url.replace('/?', '/built?'), { method: 'POST', body: JSON.stringify({ path: fx.file }) });
+  let state = null;
+  for (const end = Date.now() + 5000; Date.now() < end; await new Promise(r => setTimeout(r, 100))) {
+    try { state = await p.eval(`({ fresh: window.__before === undefined, h2: document.querySelector('h2').textContent, y: Math.round(scrollY) })`); } catch { /* mid-reload */ }
+    if (state?.fresh) break;
+  }
+  await p.close();
+  assert.ok(state?.fresh, 'page did not reload');
+  assert.equal(state.h2, 'Section one, edited.');
+  assert.ok(Math.abs(state.y - 900) < 60, `scroll was ${state.y}`);
+});

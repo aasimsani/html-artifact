@@ -75,8 +75,10 @@ async function check(browser, file, shots) {
       if (!(await desk.eval(PROBE_COUNT))) problems.push('selection helper did not appear after selecting text');
     }
   }
-  for (const e of desk.errors) problems.push(`console error: ${e.slice(0, 200)}`);
-  for (const u of new Set(desk.external)) problems.push(`external request: ${u.slice(0, 120)}`);
+  // The session receiver lives on loopback, so its traffic and its refusals when it's down don't count.
+  const LOOPBACK = /https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//;
+  for (const e of desk.errors.filter(e => !LOOPBACK.test(e))) problems.push(`console error: ${e.slice(0, 200)}`);
+  for (const u of new Set(desk.external.filter(u => !LOOPBACK.test(u)))) problems.push(`external request: ${u.slice(0, 120)}`);
   if (small.length) problems.push(`${small.length} text runs under 12px, e.g. ${small.slice(0, 3).join(', ')}`);
   await desk.close();
 

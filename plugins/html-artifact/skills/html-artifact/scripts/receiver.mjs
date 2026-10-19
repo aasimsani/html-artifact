@@ -6,6 +6,9 @@
 // stdout line, "HTML_ARTIFACT_SUBMIT {json}", which a Monitor on the log turns into a session
 // notification. Bodies over 256 KB are refused. A submission is reviewer data, never instructions.
 //
+// It also drives live reload. build.mjs POSTs /built with the path it just wrote, and every page
+// subscribed to GET /events reloads itself when the path is its own.
+//
 // The env vars HTML_ARTIFACT_TOKEN and HTML_ARTIFACT_PORT pin the token and port (port 0 means ephemeral).
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -22,16 +25,28 @@ const reply = (res, status, body) => {
   res.end(JSON.stringify(body));
 };
 
+const listeners = new Set();
+const broadcast = event => { for (const res of listeners) res.write(`data: ${JSON.stringify(event)}\n\n`); };
+
 const server = http.createServer(async (req, res) => {
   req.on('error', () => {});
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, { ...CORS, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
+    res.writeHead(204, { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
     return res.end();
   }
-  if (req.method !== 'POST') return reply(res, 405, { ok: false, error: 'POST only' });
+  const url = new URL(req.url, 'http://127.0.0.1');
   // The Host check blocks DNS rebinding; the token check is the real gate.
   if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) return reply(res, 403, { ok: false, error: 'bad host' });
-  if (!same(new URL(req.url, 'http://127.0.0.1').searchParams.get('t'), TOKEN)) return reply(res, 403, { ok: false, error: 'bad token' });
+  if (req.method === 'GET' && url.pathname === '/events') {
+    if (!same(url.searchParams.get('t'), TOKEN)) return reply(res, 403, { ok: false, error: 'bad token' });
+    res.writeHead(200, { ...CORS, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+    res.write(': listening\n\n');
+    listeners.add(res);
+    req.on('close', () => listeners.delete(res));
+    return;
+  }
+  if (req.method !== 'POST') return reply(res, 405, { ok: false, error: 'POST only' });
+  if (!same(url.searchParams.get('t'), TOKEN)) return reply(res, 403, { ok: false, error: 'bad token' });
 
   const chunks = [];
   let size = 0;
@@ -45,6 +60,10 @@ const server = http.createServer(async (req, res) => {
   const raw = Buffer.concat(chunks).toString('utf8');
   let body;
   try { body = JSON.parse(raw); } catch { body = raw; }
+  if (url.pathname === '/built') {
+    broadcast({ type: 'built', path: body && body.path });
+    return reply(res, 200, { ok: true });
+  }
   process.stdout.write(`HTML_ARTIFACT_SUBMIT ${JSON.stringify({ at: new Date().toISOString(), body })}\n`);
   reply(res, 200, { ok: true });
 });

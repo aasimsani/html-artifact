@@ -23,6 +23,25 @@
   HA.changed = name => { const b = blocks.get(name); if (b) HA.store.set(blockKey(name), b.state()); };
   HA.blocks = () => Object.fromEntries([...blocks].map(([name, b]) => [name, { state: b.state(), summary: b.summary ? b.summary() : null }]));
 
+  // Live reload. When the session receiver announces that this file was rebuilt, reload in place,
+  // and come back to the same scroll position.
+  const SCROLL = `html-artifact:scroll:${location.pathname}`;
+  try {
+    const y = sessionStorage.getItem(SCROLL);
+    if (y !== null) { sessionStorage.removeItem(SCROLL); addEventListener('load', () => scrollTo(0, +y)); }
+  } catch { /* storage blocked */ }
+  const submit = window.__CLAUDE_SUBMIT_URL__;
+  if (submit && 'EventSource' in window) {
+    const events = new EventSource(submit.replace('/?', '/events?'));
+    events.onmessage = e => {
+      let data;
+      try { data = JSON.parse(e.data); } catch { return; }
+      if (data.type !== 'built' || data.path !== decodeURIComponent(location.pathname)) return;
+      try { sessionStorage.setItem(SCROLL, String(scrollY)); } catch { /* storage blocked */ }
+      location.reload();
+    };
+  }
+
   const root = document.documentElement;
   const THEME = 'html-artifact:theme';
   const saved = HA.store.get(THEME);
