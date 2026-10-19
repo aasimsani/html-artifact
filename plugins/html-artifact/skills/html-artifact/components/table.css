@@ -1,0 +1,18 @@
+/* requires: shell */
+/* enhances: [data-sortable], .matrix */
+/* Tables: sortable and filterable (table[data-sortable]), and a weighted comparison matrix (table.matrix). */
+.table-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 16px 0 -8px; }
+.table-tools input[type=search] { font: 14px var(--sans); padding: 5px 9px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg-elev); color: var(--ink); min-width: 0; flex: 0 1 220px; }
+.table-tools .count { font: 12px var(--mono); color: var(--ink-3); }
+.table-tools button { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+table[data-sortable] th { cursor: pointer; user-select: none; }
+table[data-sortable] th[aria-sort="ascending"]::after { content: " ↑"; }
+table[data-sortable] th[aria-sort="descending"]::after { content: " ↓"; }
+table[data-sortable] thead th { position: sticky; top: 0; background: var(--bg); }
+
+.matrix th input[type=range] { display: block; width: 100%; max-width: 110px; margin: 4px 0 0 auto; accent-color: var(--accent); }
+.matrix th .weight { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.matrix td.total { font-weight: 700; }
+.matrix tr.win td { background: var(--sev-good-bg); }
+.matrix tr.win td:first-child { font-weight: 600; }
+p.verdict { margin: 8px 0 16px; padding: 8px 12px; border-left: 3px solid var(--sev-good); background: var(--sev-good-bg); border-radius: 0 6px 6px 0; max-width: 80ch; }

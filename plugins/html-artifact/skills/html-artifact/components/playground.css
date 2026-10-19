@@ -1,0 +1,11 @@
+/* requires: shell */
+/* enhances: .playground */
+/* Playground: a form of sliders, selects and checkboxes that tune CSS variables on a preview target, live. */
+.playground { display: grid; gap: 10px; margin: 20px 0; padding: 16px; max-width: 480px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-elev); }
+.playground label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 13px var(--sans); color: var(--ink-2); }
+.playground label.changed { color: var(--accent); }
+.playground input[type="range"] { flex: 1 1 120px; accent-color: var(--accent); }
+.playground select { font: 13px var(--sans); padding: 3px 6px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg); color: var(--ink); }
+.playground .readout { font: 12px var(--mono); color: var(--ink-3); min-width: 3em; text-align: right; }
+.playground label.changed .readout { color: var(--accent); }
+.playground button { font: 12px var(--mono); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg); color: var(--ink-2); cursor: pointer; }

@@ -1,0 +1,46 @@
+/* requires: shell */
+/* enhances: .callout, .stats, .bar, .claim, .chain, .ranked, .checklist */
+/* Text blocks: callout, stats, bar, claim, cause chain, ranked list, checklist.
+   Each one is plain HTML plus a class, so a page reads correctly before any script runs. */
+
+/* <aside class="callout" data-tone="crit"><b>Label.</b> Text…</aside> */
+.callout { margin: 20px 0; padding: 14px 16px; max-width: 80ch; border: 1px solid var(--rule); border-left: 3px solid var(--tone, var(--accent)); border-radius: 6px; background: var(--tone-bg, var(--accent-soft)); }
+.callout > b:first-child { display: block; margin-bottom: 4px; font: 600 12px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--tone, var(--accent)); }
+.callout > :last-child { margin-bottom: 0; }
+
+/* <dl class="stats"><div data-tone="crit"><dt>Label</dt><dd>3,127</dd></div>…</dl> */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; margin: 20px 0; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.stats > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 4px; padding: 14px 16px; background: var(--bg-elev); }
+.stats dt { font-size: 13px; line-height: 1.35; color: var(--ink-3); }
+.stats dd { margin: 0; font: 600 26px/1.15 var(--sans); font-variant-numeric: tabular-nums; color: var(--tone, var(--ink)); }
+
+/* <div class="bar" role="img" aria-label="…"><span style="--v:319" data-tone="good">$319K</span>…</div> */
+.bar { display: flex; gap: 2px; margin: 16px 0; border-radius: 6px; overflow: hidden; font: 600 12px/1 var(--mono); }
+.bar > span { flex: var(--v, 1) 1 0; min-width: 0; padding: 9px 6px 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--tone, var(--ink-2)); background: var(--tone-bg, var(--bg-sunken)); border-top: 3px solid var(--tone, var(--ink-3)); }
+
+/* <span class="claim" data-evidence="verified|inferred|guess">…</span> */
+.claim { border-bottom: 1px dotted var(--ink-3); }
+.claim[data-evidence="verified"] { --tone: var(--sev-good); --tone-bg: var(--sev-good-bg); }
+.claim[data-evidence="inferred"] { --tone: var(--sev-q); --tone-bg: var(--sev-q-bg); }
+.claim[data-evidence="guess"] { --tone: var(--sev-high); --tone-bg: var(--sev-high-bg); }
+.claim::after { content: attr(data-evidence); margin-left: 4px; padding: 0 4px; border-radius: 3px; font: 600 12px var(--mono); vertical-align: 1px; color: var(--tone); background: var(--tone-bg); }
+
+/* <ol class="chain"><li>Trigger</li>…<li data-tone="crit"><b>Defect.</b> …</li></ol> */
+.chain { list-style: none; counter-reset: chain; margin: 16px 0; padding: 0; }
+main .chain > li { counter-increment: chain; position: relative; max-width: 72ch; margin: 0; padding: 10px 0 10px 44px; border-bottom: 1px solid var(--rule); }
+.chain > li::before { content: counter(chain); position: absolute; left: 0; top: 8px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 13px var(--mono); border: 1.5px solid var(--tone, var(--ink-3)); color: var(--tone, var(--ink-2)); background: var(--tone-bg, transparent); }
+
+/* <ol class="ranked"><li><label><input type="checkbox"> Claim</label><small>Why it ranks here</small></li></ol>
+   <ul class="checklist"><li><label><input type="checkbox"> Action</label> <span class="owner">Dana · Fri</span></li></ul> */
+.progress { margin: 16px 0 6px; font: 600 12px var(--mono); color: var(--ink-3); }
+.ranked { list-style: none; counter-reset: ranked; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+main .ranked > li { counter-increment: ranked; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 6px; max-width: 80ch; margin: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg-elev); }
+.ranked > li::before { content: counter(ranked); grid-row: 1 / span 2; font: 600 20px/1.2 var(--serif); color: var(--ink-2); }
+.ranked small { grid-column: 2; color: var(--ink-3); font-size: 13px; }
+.checklist { list-style: none; margin: 0 0 16px; padding: 0; }
+main .checklist > li { margin: 0; padding: 7px 0; border-bottom: 1px solid var(--rule); }
+.checklist .owner { font: 12px var(--mono); color: var(--ink-3); white-space: nowrap; }
+.ranked label, .checklist label { cursor: pointer; }
+.ranked input, .checklist input { accent-color: var(--accent); margin: 0 6px 0 0; }
+.ranked > li:has(input:checked), .checklist > li:has(input:checked) { opacity: .55; }
+.checklist > li:has(input:checked) label { text-decoration: line-through; }

@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>bad</title>
+<style>body{background:#fff;color:#111;font:16px/1.5 sans-serif} .tiny{font-size:10px}</style></head>
+<body><main>
+<p>This page breaks every rule that verify checks, one at a time, so each check has a known failure.</p>
+<p class="tiny">This line is set in ten pixel type, below the twelve pixel floor.</p>
+<table style="width:900px"><tr><td>a table nine hundred pixels wide with no scroll container around it</td></tr></table>
+<img src="https://example.invalid/pixel.png" alt="">
+</main>
+<script>console.error('boom on load');</script>
+</body></html>

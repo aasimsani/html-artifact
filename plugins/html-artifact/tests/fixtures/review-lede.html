@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>review</title>
+<style>
+:root{--bg:#fafaf7;--ink:#1e1d1a}
+@media (prefers-color-scheme: dark){:root{--bg:#141412;--ink:#ecebe6}}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 sans-serif;margin:0;padding:16px}
+.scroll{overflow-x:auto}
+</style></head>
+<body><header><p>This long introduction sits outside the main element, so the review kit ignores selections made inside it.</p></header><main><section id="s1">
+<p>This page passes every check. Its colours flip in dark mode and nothing overflows a phone screen.</p>
+<div class="scroll"><table style="width:900px"><tr><td>a wide table inside its own scroll container</td></tr></table></div>
+</section></main>
+<div id="helper" style="position:fixed;display:none;top:10px;left:10px">+ Annotate</div>
+<script data-component="review">document.addEventListener("mouseup",()=>{const s=getSelection();const inMain=s.rangeCount&&s.getRangeAt(0).commonAncestorContainer.parentElement?.closest("main");helper.style.display=(s.isCollapsed||!inMain)?"none":"block"});</script></body></html>

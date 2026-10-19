@@ -1,0 +1,55 @@
+/* requires: shell */
+/* enhances: .editor-list */
+/* Throwaway editor: reorder, label, delete and inline-edit a list, with a trash of deleted items. */
+
+/* <ol class="editor-list" data-id="…" data-labels="bug,feature" data-tones="crit,good">
+     <li data-id="T-12">Item text <small>meta</small></li>…</ol> */
+.editor-list { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 8px; max-width: 72ch; }
+.editor-list > li, .et-trash-list > li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg-elev);
+  cursor: grab; font-size: 14px;
+}
+.editor-list > li:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editor-list > li.et-dragover { border-color: var(--accent); }
+.et-deleted { opacity: .5; cursor: default; }
+.editor-list > li > small, .et-trash-list > li > small { color: var(--ink-3); font: 12px var(--mono); }
+
+.et-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-left: auto; }
+.et-chip {
+  font: 12px var(--mono); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: var(--bg-sunken); color: var(--ink-3); cursor: pointer;
+}
+.et-chip[aria-pressed="true"] { background: var(--tone-bg); color: var(--tone); border-color: var(--tone); }
+.et-deleted .et-chips { visibility: hidden; }
+
+.et-del {
+  font: 12px var(--mono); color: var(--ink-3); background: none; border: 1px solid var(--rule-strong);
+  border-radius: 6px; padding: 2px 8px; cursor: pointer;
+}
+.et-del:hover { color: var(--sev-crit); border-color: var(--sev-crit); }
+.et-deleted .et-del:hover { color: var(--sev-good); border-color: var(--sev-good); }
+
+.et-edit { font: inherit; color: inherit; background: var(--bg-sunken); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 2px 6px; flex: 1 1 160px; min-width: 0; }
+
+.et-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 4px 0 8px; }
+.et-filter { font: 13px var(--sans); padding: 4px 8px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg-elev); color: var(--ink); }
+.et-count { font: 12px var(--mono); color: var(--ink-3); }
+
+.et-trash { margin: 12px 0; max-width: 72ch; }
+.et-trash:not([hidden]) > summary { font: 12px var(--mono); color: var(--ink-3); cursor: pointer; }
+.et-trash-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.et-trash-list > li { border-style: dashed; cursor: default; }
+
+.et-toast {
+  position: fixed; left: 16px; bottom: 16px; z-index: 60;
+  display: flex; align-items: center; gap: 10px;
+  font: 13px var(--sans); color: var(--ink); background: var(--bg-elev);
+  border: 1px solid var(--rule-strong); border-radius: 8px; padding: 8px 12px; box-shadow: var(--shadow);
+}
+.et-toast button { font: 12px var(--mono); color: var(--accent); background: none; border: 0; cursor: pointer; padding: 0; }
+
+@media (max-width: 500px) {
+  .editor-list > li { flex-direction: column; align-items: stretch; }
+  .et-chips { margin-left: 0; }
+}

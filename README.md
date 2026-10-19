@@ -1,11 +1,12 @@
 # html-artifact
 
-A Claude Code **plugin + skill** for generating **reviewable, single-file HTML
-artifacts** — RFCs, design docs, code reviews, postmortems, ADRs, specs, audits.
-Each artifact opens straight from `file://` with no build step and no network, and
-ships with review affordances baked in.
+A Claude Code plugin for **reviewable, interactive HTML documents**: RFCs, design docs, plans, code reviews, postmortems, reports, decision memos, and one-off tools such as test plans, data explorers, mind maps and comparison matrices.
 
-This repo is itself a **plugin marketplace**, so it installs directly into Claude Code.
+Claude writes content and plain HTML markup. A build script inlines prebuilt components, so every page comes out as one self-contained file with no network, no dependencies and no build pipeline. The file includes:
+
+- light and dark themes, and a layout that works on a phone;
+- a review kit: reviewed checkboxes, comments, text highlights that survive edits, quick labels, and delete/replace/general comments;
+- **Send to Claude**, which posts the whole review back into the running session.
 
 ## Install
 
@@ -14,58 +15,59 @@ This repo is itself a **plugin marketplace**, so it installs directly into Claud
 /plugin install html-artifact@html-artifact
 ```
 
-Then invoke `/html-artifact`, or just ask for "an RFC as HTML" / "review this PR as
-an HTML artifact" and the skill triggers on its own.
+Ask for "an RFC for X", "review this PR as a page", "write up the outage" or "a test plan for this release", and the skill triggers. It stays out of the way for short answers and code-only requests.
 
-To update later:
+## How it works
 
-```text
-/plugin marketplace update html-artifact
-```
+1. **Route.** The skill maps each piece of information to the simplest component for its shape: events go on a timeline, options into a comparison, a code change into an annotated diff.
+2. **Write `<name>.src.html`** using the markup in `references/components.md`, following the per-type spine in `references/types/`.
+3. **Build.** `scripts/build.mjs` detects which components the markup uses and inlines only those.
+4. **Refine once.** The skill asks whether each section is the fastest way to understand its information. If not, it restructures the section as a Minto pyramid: the answer first, the visual before the prose, and the detail on demand.
+5. **Verify.** `scripts/verify.mjs` drives the system Chrome with no npm dependency. It checks for console errors, external requests, dark mode, overflow at 400px, text under 12px, credential-shaped strings, and that text selection opens the comment helper.
+6. **Iterate.** The reader comments, answers decision blocks and edits interactive blocks, then presses Send to Claude. The agent edits the source and rebuilds. Highlights re-anchor, and changed sections show a word diff.
 
-## What every artifact gets
+## Components
 
-- per-section **"reviewed"** checkboxes with side-nav sync
-- inline **per-section comments** + **text-range annotations** (select prose, right-click, annotate)
-- a **decision queue** tray that collects flagged items for export
-- baseline **export formats** (Markdown / bullets / `gh` CLI) via `htmlToMd()`
-- slug-scoped **localStorage** persistence + a DevTools reset/export/import hatch
-- an optional **JSON companion file** on disk for live agent monitoring (two-way human ↔ agent review)
-
-Built on the methodology and demo gallery at
-**https://thariqs.github.io/html-effectiveness/** — the skill WebFetches that site at
-runtime so its examples, palettes, and category conventions stay current.
+| Family | Markup |
+|---|---|
+| shell | page layout, TOC, theme toggle, table style, `HA.register` for interactive state |
+| review | reviewed checkboxes, comments, highlights, quick labels, tray, exports, Send to Claude, share links, version diff |
+| content | `aside.callout`, `dl.stats`, `div.bar`, `span.claim`, `ol.chain`, `ol.ranked`, `ul.checklist` |
+| timeline | `ol.timeline`, `ol.stepper`, `div.roadmap` |
+| diagram | `figure.flow`, `figure.diagram` (SVG conventions, arrowheads, Copy SVG, click-to-expand) |
+| table | `table[data-sortable]`, `table.matrix` |
+| code | syntax colours, `pre.diff`, `div.annotated`, `table.findings`, `ol.risk` |
+| ask | `div.ask` decision blocks |
+| testplan, explorer, erd, mindmap, variants, playground, deck, editor | interactive artifact types, each with a reference in `references/types/` |
 
 ## Layout
 
 ```text
-.claude-plugin/marketplace.json          # marketplace manifest (this repo)
+.claude-plugin/marketplace.json
 plugins/html-artifact/
-├── .claude-plugin/plugin.json           # plugin manifest
-└── skills/html-artifact/
-    ├── SKILL.md                         # entry — the editorial style guide
-    └── references/                      # copy-pasteable snippets
-        ├── README.md                    # snippet index
-        ├── starter-template.html        # complete bootable artifact, every primitive wired in
-        ├── design-system.css            # canonical palette / type scale / chips / callouts
-        ├── annotations.html             # text-range annotation system (DOM + CSS + JS)
-        ├── comments.html                # per-section comment form + cards + reviewed checkbox
-        ├── decision-queue.html          # floating tray + slide-in drawer + clipboard copy
-        ├── annotated-diff.html          # two-column annotated diff + full unified diff
-        ├── companion-file.md            # JSON-on-disk companion spec + watcher templates
-        ├── export-formats.js            # htmlToMd() + Markdown / bullets / gh-CLI renderers
-        ├── persistence.js               # slug-prefixed localStorage + reset hatch
-        ├── sidenav-scrollspy.js         # sticky side-nav, scroll-spy, progress bars
-        └── syntax-highlighter.js        # ≤80-LoC regex highlighter (Python / SQL / JS)
+├── .claude-plugin/plugin.json
+├── skills/html-artifact/
+│   ├── SKILL.md                 # router, loop, refinement pass
+│   ├── components/              # <name>.css / <name>.js, inlined by build.mjs
+│   ├── references/              # components.md, types/*.md, rules/*.md
+│   └── scripts/                 # build.mjs, verify.mjs, cdp.mjs, receiver.mjs, listen.sh
+├── tests/                       # node --test tests/*.test.mjs (headless Chrome)
+└── evals/                       # claude plugin eval: trigger and structure checks
+bench/                           # quality and cost comparison against other skills
+research/                        # competitor survey, feature list, plan
 ```
 
-## Use the snippets without installing
+## Tests
 
-Open `plugins/html-artifact/skills/html-artifact/references/starter-template.html` in a
-browser — it's a complete, working artifact with every primitive already wired in.
-Copy it, set your slug + sections, done.
+```bash
+cd plugins/html-artifact
+node --test tests/*.test.mjs          # component tests; needs Node ≥ 22 and Google Chrome
+claude plugin eval . --allow-tools Write Edit Bash   # trigger evals, billed to your account
+```
 
-## Attribution
+## Credits
 
-Style methodology and demos: https://thariqs.github.io/html-effectiveness/.
-These files are free to copy and adapt.
+- The diagram, timeline, checklist, matrix, code-review and redaction rules are adapted from [f-labs-io/agent-html-skills](https://github.com/f-labs-io/agent-html-skills) (MIT). The local listener for Send to Claude follows its design.
+- The trigger discipline, chart rules, style bans and the headless verify pass are adapted from [dogum/html-artifacts](https://github.com/dogum/html-artifacts) (Apache-2.0).
+- The annotation types, quick labels, decision blocks and share links take their ideas from [backnotprop/plannotator](https://github.com/backnotprop/plannotator) and [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer).
+- The original methodology comes from [thariqs.github.io/html-effectiveness](https://thariqs.github.io/html-effectiveness/).

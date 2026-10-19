@@ -1,5 +1,5 @@
 {
   "name": "html-artifact",
-  "description": "Editorial style guide for one-off, single-file reviewable HTML *artifacts* (RFCs, design docs, code reviews, postmortems, ADRs, plans). Single self-contained file with section-reviewed checkboxes, per-section comments, decision queue, text-range annotations, multi-element selection, right-click annotate, baseline export formats, and a JSON companion file on disk for live agent monitoring. NOT for production web apps or customer-facing UIs.",
-  "version": "0.3.0"
+  "description": "Reviewable, interactive single-file HTML documents built from reusable components: RFCs, design docs, plans, code reviews, postmortems, reports, decision memos, test plans, data explorers, mind maps and more. Dark mode, phone layout, comments and highlights that survive edits, decision blocks, and Send to Claude for a review loop with no copy-paste.",
+  "version": "2.0.0"
 }

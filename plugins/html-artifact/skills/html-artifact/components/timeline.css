@@ -1,0 +1,37 @@
+/* requires: shell */
+/* enhances: .timeline, .stepper, .roadmap */
+/* Sequences: a timestamp rail, a numbered stepper, and roadmap lanes with a today marker. */
+
+/* <ol class="timeline"><li data-tone="crit"><time>14:02</time> What happened.</li>…</ol> */
+.timeline { list-style: none; margin: 20px 0; padding: 0; }
+main .timeline > li { position: relative; display: grid; grid-template-columns: 76px 18px minmax(0, 1fr); column-gap: 10px; max-width: 80ch; margin: 0; padding: 0 0 16px; }
+.timeline > li::before { content: ""; grid-column: 2; grid-row: 1 / span 9; justify-self: center; width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; border: 2px solid var(--tone, var(--ink-3)); background: var(--tone-bg, var(--bg)); z-index: 1; }
+.timeline > li[data-tone]::before { background: var(--tone); }
+.timeline > li::after { content: ""; position: absolute; left: 94px; top: 20px; bottom: -2px; border-left: 1px solid var(--rule-strong); }
+.timeline > li:last-child::after { display: none; }
+.timeline > li > time { grid-column: 1; grid-row: 1; padding-top: 1px; font: 600 13px/1.6 var(--mono); text-align: right; color: var(--tone, var(--ink-3)); }
+.timeline > li > :not(time) { grid-column: 3; }
+
+/* <ol class="stepper"><li><b>Step</b> detail</li>…</ol> */
+.stepper { list-style: none; counter-reset: step; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; margin: 28px 0 20px; padding: 0; }
+main .stepper > li { counter-increment: step; position: relative; max-width: none; margin: 0; padding: 22px 0 0; border-top: 2px solid var(--tone, var(--rule-strong)); font-size: 14px; color: var(--ink-2); }
+.stepper > li::before { content: counter(step); position: absolute; top: -15px; left: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 13px var(--mono); color: var(--tone, var(--ink)); background: var(--bg); border: 2px solid var(--tone, var(--ink-3)); }
+.stepper > li > b { display: block; color: var(--ink); font-size: 15px; }
+@media (max-width: 700px) {
+  .stepper { grid-auto-flow: row; gap: 20px; padding-left: 14px; border-left: 2px solid var(--rule-strong); }
+  main .stepper > li { border-top: 0; padding: 2px 0 0 26px; }
+  .stepper > li::before { top: 0; left: -29px; }
+}
+
+/* <div class="roadmap" data-start="2026-10-01" data-end="2027-01-31" data-today="2026-11-10">
+     <div class="lane" data-name="Platform"><span data-start="…" data-end="…" data-tone="good">Item</span></div></div> */
+.roadmap { position: relative; margin: 20px 0; overflow-x: auto; font-size: 13px; }
+.roadmap .inner { position: relative; min-width: 560px; }
+.roadmap .axis { display: grid; margin-left: 110px; border-bottom: 1px solid var(--rule-strong); font: 12px var(--mono); color: var(--ink-3); }
+.roadmap .axis span { padding: 0 0 4px 4px; border-left: 1px solid var(--rule); }
+.roadmap .lane { position: relative; display: block; height: 40px; margin-left: 110px; border-bottom: 1px solid var(--rule); }
+.roadmap .lane::before { content: attr(data-name); position: absolute; right: calc(100% + 10px); top: 11px; width: 100px; text-align: right; font-weight: 600; color: var(--ink-2); }
+.roadmap .lane > span { position: absolute; top: 7px; height: 26px; padding: 0 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 12px/24px var(--sans); border-radius: 5px; color: var(--tone, var(--ink-2)); background: var(--tone-bg, var(--bg-sunken)); border: 1px solid var(--tone, var(--rule-strong)); }
+.roadmap .lane > span[data-status="planned"] { background: none; border-style: dashed; }
+.roadmap .today { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--sev-crit); pointer-events: none; }
+.roadmap .today::after { content: "today"; position: absolute; top: -2px; left: 4px; font: 600 12px var(--mono); color: var(--sev-crit); background: var(--bg); padding: 0 3px; }

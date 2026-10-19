@@ -1,0 +1,28 @@
+/* requires: shell */
+/* enhances: .variants */
+/* Brainstorm grid: N rendered variants side by side. Each variant carries a pick/shortlist/reject
+   toolbar and a notes field. The grid holds one column on a phone and up to four on a wide screen. */
+.variants { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 20px 0; }
+@media (min-width: 560px) { .variants { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 860px) { .variants { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1150px) { .variants { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Compare mode shows only the two shortlisted variants, each at full column width. */
+.variants.comparing { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+main .variant { margin: 0; max-width: none; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-elev); }
+.variant h3 { margin: 0 0 8px; font: 600 16px/1.3 var(--sans); }
+.variant.picked { outline: 2px solid var(--accent); outline-offset: 2px; }
+.variant.shortlisted { border-color: var(--sev-good); }
+.variant.rejected { opacity: .5; }
+
+.variant-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+.variant-toolbar button { font: 12px var(--mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.variant-toolbar button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+.variant-notes { display: block; margin: 10px 0 0; font: 12px var(--mono); color: var(--ink-3); }
+.variant-notes textarea { display: block; width: 100%; margin-top: 4px; padding: 6px 8px; font: 13px var(--sans); color: var(--ink); background: var(--bg); border: 1px solid var(--rule-strong); border-radius: 6px; resize: vertical; }
+
+.variants-tools { display: flex; align-items: center; gap: 10px; margin: 16px 0 -4px; }
+.variants-tools button { font: 12px var(--mono); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.variants-tools button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.variants-hint { margin: 0; font: 12px var(--mono); color: var(--ink-3); }

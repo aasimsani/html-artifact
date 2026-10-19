@@ -1,7 +1,7 @@
 {
   "name": "html-artifact",
   "metadata": {
-    "description": "Agent skill for generating reviewable single-file HTML artifacts — RFCs, design docs, code reviews, postmortems, ADRs, specs"
+    "description": "Reviewable, interactive HTML documents for Claude Code"
   },
   "owner": {
     "name": "Aasim Sani"
@@ -10,7 +10,7 @@
     {
       "name": "html-artifact",
       "source": "./plugins/html-artifact",
-      "description": "Editorial style guide for one-off, single-file reviewable HTML artifacts (RFCs, design docs, code reviews, postmortems, ADRs, plans) — NOT for production web apps or customer-facing UIs. Single self-contained file with section-reviewed checkboxes, per-section comments, decision queue, text-range annotations, baseline export formats, and a JSON companion file on disk for live agent monitoring"
+      "description": "Reviewable, interactive single-file HTML documents built from reusable components, with a review loop that sends comments, decisions and interactive state back to Claude."
     }
   ]
 }

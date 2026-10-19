@@ -1,0 +1,92 @@
+/* requires: shell */
+/* Review kit styles. The [data-tone] colours come from shell.css. */
+
+main > section { position: relative; }
+.rv-check { position: absolute; top: 40px; right: 0; display: flex; gap: 6px; align-items: center; font: 12px var(--mono); color: var(--ink-3); cursor: pointer; user-select: none; }
+main > section:first-child > .rv-check { top: 16px; }
+.rv-check input { accent-color: var(--accent); margin: 0; }
+main > section.rv-done > :not(.rv-ui) { opacity: .55; }
+main > section.rv-done > .eyebrow { text-decoration: line-through; }
+nav.toc a.rv-done::after { content: " ✓"; color: var(--sev-good); }
+
+.rv-add { margin-top: 20px; font: 12px var(--mono); color: var(--ink-3); background: none; border: 1px dashed var(--rule-strong); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.rv-add:hover { color: var(--ink); border-color: var(--ink-3); }
+.rv-form { margin-top: 16px; }
+
+.rv-editor { display: grid; gap: 10px; }
+.rv-sevs { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv-pill { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.rv-pill[aria-pressed="true"] { background: var(--tone-bg); color: var(--tone); border-color: var(--tone); }
+.rv-editor textarea, .rv-drawer textarea { width: 100%; font: 14px/1.5 var(--sans); color: var(--ink); background: var(--bg-elev); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 8px 10px; resize: vertical; }
+.rv-actions, .rv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rv-btn { font: 13px var(--sans); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink); cursor: pointer; }
+.rv-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.rv-danger { color: var(--sev-crit); }
+
+.rv-cards:not(:empty) { display: grid; gap: 10px; margin-top: 20px; }
+.rv-card { border: 1px solid var(--rule); border-left: 3px solid var(--tone); background: var(--bg-elev); border-radius: 6px; padding: 10px 12px; font-size: 14px; max-width: 72ch; }
+.rv-card.rv-addressed { opacity: .55; }
+.rv-card.rv-outdated { border-style: dashed; border-left-style: solid; }
+.rv-card-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rv-spacer { flex: 1; }
+.rv-badge { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--tone); background: var(--tone-bg); padding: 1px 7px; border-radius: 4px; }
+.rv-flag { color: var(--ink-3); background: var(--bg-sunken); }
+.rv-link { font: 12px var(--mono); color: var(--ink-3); background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.rv-link:hover { color: var(--ink); }
+.rv-quote { margin: 8px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--rule-strong); color: var(--ink-2); font: italic 14px/1.5 var(--serif); }
+.rv-body { margin-top: 6px; white-space: pre-wrap; overflow-wrap: break-word; }
+
+mark.rv-mark { background: var(--tone-bg); color: inherit; border-bottom: 2px solid var(--tone); padding: 0 1px; cursor: pointer; }
+mark.rv-mark:hover, mark.rv-mark.rv-flash { filter: brightness(.92); }
+:root[data-theme="dark"] mark.rv-mark:hover, :root[data-theme="dark"] mark.rv-mark.rv-flash { filter: brightness(1.25); }
+
+.rv-helper { position: fixed; z-index: 40; font: 600 12px var(--sans); padding: 5px 10px; border-radius: 6px; border: 0; background: var(--ink); color: var(--bg); box-shadow: var(--shadow); cursor: pointer; }
+.rv-popover { position: fixed; z-index: 41; width: min(380px, calc(100vw - 16px)); background: var(--bg-elev); border: 1px solid var(--rule-strong); border-radius: 8px; padding: 12px; box-shadow: var(--shadow); }
+.rv-popover .rv-quote { margin: 0 0 10px; max-height: 6em; overflow: auto; }
+.rv-helper[hidden], .rv-popover[hidden] { display: none; }
+
+.rv-tray { position: fixed; right: 16px; bottom: 16px; z-index: 30; font: 13px var(--sans); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink); box-shadow: var(--shadow); cursor: pointer; }
+.rv-tray b { margin-left: 4px; padding: 0 7px; border-radius: 999px; background: var(--ink); color: var(--bg); font-weight: 600; }
+.rv-drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 50; width: min(480px, 100vw); display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--bg-elev); border-left: 1px solid var(--rule-strong); box-shadow: var(--shadow); transform: translateX(105%); visibility: hidden; transition: transform .2s cubic-bezier(.22, .61, .36, 1), visibility 0s .2s; }
+.rv-drawer.rv-open { transform: none; visibility: visible; transition: transform .2s cubic-bezier(.22, .61, .36, 1); }
+.rv-drawer-head { display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+.rv-drawer select { font: 13px var(--sans); padding: 5px 8px; border-radius: 6px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink); }
+.rv-drawer textarea { flex: 1; font: 12.5px/1.5 var(--mono); resize: none; }
+.rv-close { border: 0; font-size: 20px; line-height: 1; padding: 2px 8px; }
+
+@media (max-width: 900px) { .rv-check { position: static; margin-bottom: 8px; } }
+@media print { .rv-ui:not(.rv-cards) { display: none !important; } }
+
+.rv-inline { font: 12px var(--mono); color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center; }
+.rv-inline input { accent-color: var(--sev-crit); margin: 0; }
+.rv-editor textarea.rv-suggestion { font: 13px/1.5 var(--mono); background: var(--bg-sunken); }
+.rv-suggested { margin: 8px 0 0; font-size: 12.5px; }
+.rv-send-status { margin: 0; font-size: 13px; color: var(--ink-3); flex: 1; min-width: 160px; }
+
+.rv-kinds, .rv-qlabels { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv-kind { font: 12px var(--sans); padding: 3px 10px; border-radius: 6px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.rv-kind[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.rv-qlabel { font: 12px var(--mono); padding: 2px 9px; border-radius: 999px; border: 1px dashed var(--rule-strong); background: none; color: var(--ink-3); cursor: pointer; }
+.rv-qlabel[aria-pressed="true"] { border-style: solid; border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.rv-editor textarea[hidden] { display: none; }
+mark.rv-mark[data-kind="delete"] { text-decoration: line-through; text-decoration-color: var(--sev-crit); }
+mark.rv-mark[data-kind="replace"] { border-bottom-style: dashed; }
+.rv-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule); }
+.rv-tabs button { font: 600 13px var(--sans); padding: 6px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--ink-3); cursor: pointer; }
+.rv-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.rv-list { display: flex; flex-direction: column; gap: 8px; overflow: auto; flex: 1; }
+.rv-list[hidden], .rv-export[hidden] { display: none; }
+.rv-export { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+.rv-list-item { display: grid; gap: 3px; text-align: left; font: 14px/1.4 var(--sans); color: var(--ink); padding: 8px 10px; border: 1px solid var(--rule); border-left: 3px solid var(--tone); border-radius: 6px; background: var(--bg); cursor: pointer; }
+.rv-list-item small { font: 12px var(--mono); color: var(--ink-3); }
+.rv-list-item q { font: italic 14px var(--serif); color: var(--ink-2); }
+.rv-list-item .rv-badge { justify-self: start; }
+.rv-list-body { white-space: pre-wrap; }
+.rv-empty { color: var(--ink-3); font-size: 14px; }
+.rv-general { align-self: flex-start; }
+.rv-notice { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 14px; box-shadow: var(--shadow); }
+.rv-changed-bar { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin: 0 0 10px; padding: 6px 10px; border-radius: 6px; font-size: 13px; color: var(--sev-high); background: var(--sev-high-bg); }
+.rv-diff { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; font-size: 14px; line-height: 1.6; background: var(--bg-elev); }
+.rv-diff[hidden] { display: none; }
+.rv-diff ins { text-decoration: none; background: var(--diff-add-2); }
+.rv-diff del { background: var(--diff-del-2); }

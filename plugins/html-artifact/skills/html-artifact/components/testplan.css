@@ -1,0 +1,48 @@
+/* requires: shell */
+/* enhances: .testplan */
+/* Test-plan checklist: flows (section.tp-flow) of steps (div.tp-step), each with a dl of
+   Action/Pass/Watch. JS adds the state control, notes box, progress bars, search and filter. */
+
+.testplan { margin: 20px 0; }
+
+.tp-toolbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 8px; }
+.tp-toolbar input[type=search] { font: 14px var(--sans); padding: 5px 9px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg-elev); color: var(--ink); min-width: 0; flex: 0 1 220px; }
+.tp-toolbar label { font: 13px var(--sans); color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+
+.tp-progress { position: sticky; top: 0; z-index: 4; padding: 10px 0; background: var(--bg); border-bottom: 1px solid var(--rule); margin-bottom: 16px; }
+.tp-bar { display: flex; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; background: var(--bg-sunken); }
+.tp-bar-sm { height: 6px; margin-top: 4px; }
+.tp-fill { display: block; height: 100%; }
+.tp-fill.tp-pass { background: var(--sev-good); }
+.tp-fill.tp-fail { background: var(--sev-crit); }
+.tp-fill.tp-blocked { background: var(--sev-high); }
+.tp-fill.tp-skipped { background: var(--ink-4); }
+.tp-summary { margin: 6px 0 0; font: 12px var(--mono); color: var(--ink-3); }
+
+.tp-flow { padding: 16px 0; border-top: 1px solid var(--rule); }
+.tp-flow:first-child { border-top: 0; padding-top: 0; }
+.tp-flow-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.tp-flow-title { margin: 0; font: 600 14px var(--sans); color: var(--ink); }
+.tp-flow-summary { font: 12px var(--mono); color: var(--ink-3); }
+
+.tp-step { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-elev); max-width: 72ch; }
+.tp-step[data-status="pass"] { background: var(--sev-good-bg); border-color: var(--sev-good); }
+.tp-step[data-status="fail"] { background: var(--sev-crit-bg); border-color: var(--sev-crit); }
+.tp-step[data-status="blocked"] { background: var(--sev-high-bg); border-color: var(--sev-high); }
+.tp-step[data-status="skipped"] { background: var(--bg-sunken); }
+.tp-step.tp-current { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tp-step dl { margin: 0; }
+.tp-step dt { font: 600 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 10px 0 0; }
+.tp-step dt:first-child { margin-top: 0; }
+.tp-step dd { margin: 2px 0 0; }
+.tp-step[hidden] { display: none; }
+
+.tp-control { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tp-control button { font: 12px var(--mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg); color: var(--ink-2); cursor: pointer; }
+.tp-control button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; }
+
+.tp-notes { display: block; width: 100%; margin-top: 10px; font: 13px var(--sans); padding: 8px 10px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg); color: var(--ink); resize: vertical; min-height: 44px; }
+
+@media (max-width: 480px) {
+  .tp-flow-head { flex-direction: column; align-items: flex-start; }
+}
