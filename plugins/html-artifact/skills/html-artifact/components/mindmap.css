@@ -1,0 +1,27 @@
+/* requires: shell */
+/* enhances: .mindmap */
+/* Mind map: an editable outline (ul.mindmap > li > ul …) with guide lines connecting each node
+   to its children, inline rename, per-node controls, and a keep / maybe / drop mark. */
+ul.mindmap, ul.mindmap ul { list-style: none; margin: 0; padding: 0; }
+ul.mindmap { margin: 20px 0; font: 14px var(--sans); }
+ul.mindmap ul { margin-left: 24px; padding-left: 20px; border-left: 1.5px solid var(--rule-strong); }
+ul.mindmap li { position: relative; margin: 2px 0; }
+ul.mindmap li::before { content: ""; position: absolute; left: -20px; top: 16px; width: 20px; height: 1.5px; background: var(--rule-strong); }
+ul.mindmap > li::before { display: none; }
+ul.mindmap .row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 30px; }
+ul.mindmap .toggle { flex: none; width: 18px; height: 18px; border: none; background: none; color: var(--ink-3); cursor: pointer; font: 12px var(--mono); padding: 0; }
+ul.mindmap .toggle[hidden] { visibility: hidden; }
+ul.mindmap .label { padding: 4px 8px; border-radius: 6px; outline: none; min-width: 32px; overflow-wrap: anywhere; }
+ul.mindmap .label:focus { box-shadow: 0 0 0 2px var(--accent); }
+ul.mindmap .label[contenteditable="true"] { background: var(--bg-elev); box-shadow: 0 0 0 2px var(--accent); cursor: text; }
+ul.mindmap .controls { display: flex; flex-wrap: wrap; gap: 4px; margin-left: 4px; }
+ul.mindmap .controls button { font: 12px var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+ul.mindmap li[data-tone="keep"] > .row .label { box-shadow: inset 3px 0 0 var(--sev-good); }
+ul.mindmap li[data-tone="maybe"] > .row .label { box-shadow: inset 3px 0 0 var(--sev-q); }
+ul.mindmap li[data-tone="drop"] > .row .label { opacity: .55; box-shadow: inset 3px 0 0 var(--sev-crit); text-decoration: line-through; }
+.mindmap-tools { display: flex; gap: 8px; margin: 0 0 10px; }
+.mindmap-tools button { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.mindmap-tools button:disabled { opacity: .4; cursor: default; }
+@media (max-width: 480px) {
+  ul.mindmap ul { margin-left: 14px; padding-left: 12px; }
+}

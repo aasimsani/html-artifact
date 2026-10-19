@@ -1,0 +1,64 @@
+/* requires: shell */
+/* enhances: .diff, .language-*, .annotated, .findings, .risk */
+/* Code: syntax colours and diff line colours. */
+:root {
+  --hl-k: #6d28d9; --hl-s: #047857; --hl-c: #6f6b60; --hl-b: #0e7490; --hl-n: #b45309; --hl-d: #be185d; --hl-t: #1e40af;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --hl-k: #c4a8f5; --hl-s: #7bd88f; --hl-c: #9a968a; --hl-b: #67c6d8; --hl-n: #f2b46b; --hl-d: #f08fc0; --hl-t: #93b4f8; }
+}
+:root[data-theme="dark"] { --hl-k: #c4a8f5; --hl-s: #7bd88f; --hl-c: #9a968a; --hl-b: #67c6d8; --hl-n: #f2b46b; --hl-d: #f08fc0; --hl-t: #93b4f8; }
+
+/* <pre class="diff" data-file="path"><code>@@ …\n-old\n+new</code></pre> */
+pre.diff { padding: 0; }
+pre.diff[data-file]::before { content: attr(data-file); display: block; position: sticky; left: 0; padding: 8px 16px; font: 600 12px var(--mono); color: var(--ink-2); background: var(--bg-elev); border-bottom: 1px solid var(--rule); }
+pre.diff code { display: block; padding: 8px 0; }
+pre.diff .ln { display: block; min-width: max-content; padding: 0 16px; }
+pre.diff .ln.add { background: var(--diff-add); }
+pre.diff .ln.del { background: var(--diff-del); }
+pre.diff .ln.hunk { background: var(--diff-hunk); color: var(--ink-3); }
+
+.hl-k { color: var(--hl-k); font-weight: 500; }
+.hl-s { color: var(--hl-s); }
+.hl-c { color: var(--hl-c); font-style: italic; }
+.hl-b { color: var(--hl-b); }
+.hl-n { color: var(--hl-n); }
+.hl-d { color: var(--hl-d); font-weight: 500; }
+.hl-t { color: var(--hl-t); }
+
+/* Code review. <div class="annotated" data-file="…"><pre class="diff">…⟦F1⟧</pre><ol class="notes"><li id="F1" data-tone="crit">…</li></ol></div> */
+.annotated { display: grid; grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr); gap: 4px 14px; align-items: start; margin: 20px 0; scroll-margin-top: 24px; }
+.annotated > .anno-tools { grid-column: 1; display: flex; justify-content: flex-end; }
+.annotated > pre, .annotated > .split { grid-column: 1; margin: 0; }
+.annotated > .notes { grid-column: 2; grid-row: 1 / span 3; }
+.annotated.viewed > pre, .annotated.viewed > .split { opacity: .6; }
+.anno-tools button { font: 12px var(--mono); padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.ln a.mark, .notes .mark { display: inline-block; min-width: 26px; margin-left: 8px; padding: 0 5px; border-radius: 9px; text-align: center; font: 600 12px/18px var(--mono); text-decoration: none; color: var(--bg); background: var(--ink-2); }
+.notes .mark { margin: 0 6px 0 0; }
+.ln[data-note] { box-shadow: inset 3px 0 var(--ink-2); }
+.notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+main .notes > li { margin: 0; max-width: none; padding: 8px 10px; border-left: 3px solid var(--tone, var(--rule-strong)); background: var(--tone-bg, var(--bg-elev)); border-radius: 0 6px 6px 0; scroll-margin-top: 24px; }
+.notes > li > b { font: 600 12px var(--mono); text-transform: uppercase; color: var(--tone, var(--ink-2)); }
+.notes > li.active { outline: 2px solid var(--tone, var(--accent)); }
+.split { display: grid; grid-template-columns: 1fr 1fr; overflow-x: auto; font: 13px/1.55 var(--mono); background: var(--bg-sunken); border: 1px solid var(--rule); border-radius: 6px; }
+.split .side { padding: 8px 0; min-width: 0; overflow-x: auto; }
+.split .side.old { border-right: 1px solid var(--rule); }
+.split .ln { display: block; min-width: max-content; padding: 0 12px; white-space: pre; }
+.split .ln.add { background: var(--diff-add); } .split .ln.del { background: var(--diff-del); } .split .ln.hunk { background: var(--diff-hunk); color: var(--ink-3); }
+@media (max-width: 900px) { .annotated { grid-template-columns: minmax(0, 1fr); } .annotated > .notes { grid-column: 1; grid-row: auto; } }
+
+nav.files { margin: 16px 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg-elev); font-size: 14px; }
+.files-head { margin: 0 0 6px; } .files-head .count { font: 12px var(--mono); color: var(--ink-3); }
+nav.files ul { list-style: none; margin: 0; padding: 0; columns: 2 260px; }
+nav.files li { margin: 2px 0; } nav.files input { accent-color: var(--accent); margin-right: 6px; }
+nav.files a { font: 13px var(--mono); }
+
+/* <table class="findings"><tr data-tone="crit"><td><a href="#F1">F1</a></td><td>issue · blocking</td>… */
+table.findings td:first-child { font: 600 13px var(--mono); white-space: nowrap; }
+table.findings tr[data-tone] td:nth-child(2) { font: 600 12px var(--mono); text-transform: uppercase; color: var(--tone); white-space: nowrap; }
+table.findings tr[data-tone] td:first-child { border-left: 3px solid var(--tone); }
+
+/* <ol class="risk"><li data-tone="crit" style="--w:90"><code>file</code> reason</li></ol> */
+.risk { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 6px; }
+main .risk > li { max-width: none; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 10px; border: 1px solid var(--rule); border-left: 4px solid var(--tone, var(--ink-3)); border-radius: 6px; font-size: 14px; color: var(--ink-2); background: linear-gradient(to right, var(--tone-bg, var(--bg-sunken)) calc(var(--w, 0) * 1%), var(--bg-elev) 0); }
+.risk code { background: none; padding: 0; font-weight: 600; color: var(--ink); }

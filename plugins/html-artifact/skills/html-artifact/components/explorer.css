@@ -1,0 +1,45 @@
+/* requires: shell */
+/* enhances: .explorer */
+/* Data explorer: a div.explorer holding a JSON rows script and an optional caption. JS builds
+   the header, facet sidebar, search, sortable paginated table, histogram and export buttons. */
+
+.explorer { margin: 20px 0; }
+.explorer script { display: none; }
+.exp-header .exp-count { margin: 0 0 12px; font: 13px var(--mono); color: var(--ink-3); }
+
+.exp-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; }
+.exp-facets { border-right: 1px solid var(--rule); padding-right: 16px; }
+.exp-facet-group { margin-bottom: 18px; }
+.exp-facet-group h4 { margin: 0 0 6px; font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.exp-facet-group ul { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }
+.exp-facet-group li { margin: 2px 0; }
+.exp-facet-group label { display: flex; align-items: baseline; gap: 4px; font: 13px var(--sans); color: var(--ink-2); cursor: pointer; }
+.exp-count-badge { margin-left: auto; font: 12px var(--mono); color: var(--ink-3); }
+
+.exp-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 12px; }
+.exp-tools input[type=search] { font: 14px var(--sans); padding: 5px 9px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg-elev); color: var(--ink); min-width: 0; flex: 0 1 220px; }
+.exp-tools button { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+
+.exp-histo { margin-bottom: 12px; }
+.exp-histo svg { display: block; width: 100%; height: 48px; }
+.exp-histo-bar { fill: var(--accent); }
+
+.exp-table { width: 100%; }
+.exp-table thead th { cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--bg); }
+.exp-table th[aria-sort="ascending"]::after { content: " ↑"; }
+.exp-table th[aria-sort="descending"]::after { content: " ↓"; }
+.exp-table tbody tr:not(.exp-detail-row) { cursor: pointer; }
+.exp-detail-row td { background: var(--bg-sunken); padding: 10px 12px; }
+.exp-detail { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.exp-detail dt { font: 600 12px var(--mono); color: var(--ink-3); }
+.exp-detail dd { margin: 0; }
+
+.exp-pager { display: flex; align-items: center; gap: 10px; margin-top: 10px; font: 13px var(--sans); color: var(--ink-2); }
+.exp-pager button { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+.exp-pager button:disabled { opacity: .4; cursor: default; }
+
+@media (max-width: 700px) {
+  .exp-layout { grid-template-columns: minmax(0, 1fr); }
+  .exp-facets { border-right: 0; border-bottom: 1px solid var(--rule); padding-right: 0; padding-bottom: 12px; display: flex; flex-wrap: wrap; gap: 0 24px; }
+  .exp-facet-group { flex: 1 1 160px; }
+}

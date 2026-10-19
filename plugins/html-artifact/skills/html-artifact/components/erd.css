@@ -1,0 +1,32 @@
+/* requires: shell */
+/* enhances: .erd */
+/* ERD explorer: a responsive grid of entity tables (table.entity), with reference lines drawn
+   in an SVG overlay (div.erd), a click-to-focus lens that dims unrelated entities, and a
+   column search box. */
+.erd { position: relative; margin: 20px 0; }
+.erd .search { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; }
+.erd .search input { font: 14px var(--sans); padding: 5px 9px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--bg-elev); color: var(--ink); min-width: 0; flex: 0 1 240px; }
+.erd .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; position: relative; z-index: 1; align-items: start; }
+.erd .lines { position: absolute; top: 0; left: 0; z-index: 0; color: var(--ink-3); overflow: visible; }
+.erd .lines .edge { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.erd .lines .edge.active { stroke: var(--accent); stroke-width: 2.5; }
+.erd .lines .label rect { fill: var(--bg-elev); stroke: none; }
+.erd .lines .label text { fill: var(--ink-2); font: 700 12px var(--mono); text-anchor: middle; dominant-baseline: middle; }
+
+table.entity { width: 100%; border-collapse: collapse; background: var(--bg-elev); border: 1px solid var(--rule-strong); border-radius: 8px; font: 13px var(--mono); transition: opacity .15s; }
+table.entity caption { cursor: pointer; text-align: left; padding: 8px 12px; font: 600 13px var(--sans); background: var(--bg-sunken); border-bottom: 1px solid var(--rule-strong); border-radius: 8px 8px 0 0; }
+table.entity tr { border-bottom: 1px solid var(--rule); }
+table.entity tr:last-child { border-bottom: none; }
+table.entity td { padding: 5px 12px; }
+table.entity td:first-child { font-weight: 600; }
+table.entity td:last-child { color: var(--ink-3); text-align: right; }
+table.entity tr[data-pk] { box-shadow: inset 3px 0 0 var(--accent); }
+table.entity tr[data-pk] td:first-child::before { content: "PK "; font: 700 12px var(--mono); color: var(--accent); }
+table.entity tr[data-ref] { box-shadow: inset 3px 0 0 var(--ink-3); }
+table.entity tr[data-ref] td:first-child::before { content: "FK "; font: 700 12px var(--mono); color: var(--ink-3); }
+table.entity tr.match { background: var(--sev-good-bg); }
+.erd .grid > table.entity.focus { box-shadow: 0 0 0 2px var(--accent); }
+.erd .grid > table.entity.dim { opacity: .35; }
+@media (max-width: 480px) {
+  .erd .grid { grid-template-columns: 1fr; }
+}
