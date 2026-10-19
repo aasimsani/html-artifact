@@ -74,10 +74,15 @@ P1–P5 done ─► P6 router + prompts ─► P7 content components ─► P8 c
 
 - [x] `HA.register` contract (3 tests), decision blocks (5), receiver plus `listen.sh` plus Send to Claude (6), and comment kinds, quick labels, general comments, side panel, version diff and share links (7).
 
-### Phase 10 — interactive types (in progress, four parallel agents)
+### Phase 10 — interactive types ✅
 
-- [ ] testplan, explorer, erd, mindmap, variants, playground, deck, editor. Each one gets a component, a test file and a type reference.
+- [x] testplan, explorer, erd, mindmap, variants, playground, deck and editor. Each has a component, a test file and a type reference. Four agents built them in parallel against `HA.register`. The suite is 149 of 149 green.
 
-### Phase 11 — bench + perf
+### Phase 11 — bench + perf ✅ (with misses)
 
-- [ ] Re-run the bench with a v2 arm, 3 runs per case, all scored with `cdp.mjs`.
+- [x] v2 arm, 3 runs per case, all arms re-scored with `cdp.mjs`. Results are in PR #1.
+- [x] Met: fidelity 95% and reviewable 100%, level with v0.3. Dark mode, phone fit, clean console and round trip all at 100%. Output tokens dropped from 53k to 24k. The real-PR code review renders annotated hunks.
+- [x] Perf: review init takes 5 ms on a 1.1 MB page, plus about 0.25 ms per stored comment.
+- [ ] Missed: $2.18 per artifact against $1.60. Next step: cut turns by merging the verify and refine passes, and trim the reference reads.
+- [ ] Missed: the design judge scored 42% against 71%. Next step: judge a screenshot or the `.src.html`, not 150 KB of built HTML.
+- [ ] Missed: built pages average 128 KB against 60 KB. Next step: minify components at build time.
