@@ -222,6 +222,7 @@
     }
     const open = state.comments.filter(c => !c.addressed).length;
     tray.replaceChildren(`${LABEL} `, h('b', { textContent: String(open) }));
+    if (typeof tuck === 'function') tuck();
     if (drawer.classList.contains('rv-open')) { output.value = exportAs(format.value); if (!list.querySelector('.rv-editor')) renderList(); }
   };
   const commit = () => { save(); render(); };
@@ -582,8 +583,17 @@
   }
   HA.store.set(SEEN, seen);
 
+  // On a phone the pill would cover the first screen's content, so it waits until the reader
+  // scrolls, starts reviewing, or opens the drawer.
+  const narrow = matchMedia('(max-width: 700px)');
+  const tuck = () => tray.classList.toggle('rv-tucked', narrow.matches && scrollY < innerHeight * 0.6
+    && !state.comments.length && !drawer.classList.contains('rv-open'));
+  addEventListener('scroll', tuck, { passive: true });
+  narrow.addEventListener('change', tuck);
+
   document.body.append(helper, popover, tray, drawer);
   render();
+  tuck();
   importShared();
   performance.measure('ha:review-init', 'ha:review-start');
   HA.review = { export: exportAs, shareLink, state: () => JSON.parse(JSON.stringify(state)), clear: () => { state.comments = []; state.reviewed = {}; commit(); } };

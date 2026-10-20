@@ -21,13 +21,21 @@ If you are unsure, ask yourself whether the reader will do anything with the pag
 
 ## The loop
 
-1. **Route.** List the pieces of information the page must carry. Give each one a component from the router table below.
-2. **Read the type reference.** Open `references/types/<type>.md` for the document type, plus any rule file the router points to. They are short.
-3. **Write `<name>.src.html`.** Start from the skeleton below. Use the component markup from `references/components.md`. Name the file by kind, for example `postmortem_queue-backlog.src.html`.
-4. **Build.** Run `node <skill-dir>/scripts/build.mjs <name>.src.html`. It writes `<name>.html` with every component the markup uses inlined. `<skill-dir>` is the base directory shown when this skill loads.
-5. **Refine once.** Apply the refinement pass below, edit the source, and build again.
-6. **Verify.** Run `node <skill-dir>/scripts/verify.mjs --shots <dir> <name>.html`. Fix every ✗ line and read the screenshots. If Chrome isn't available, say so in one line and deliver anyway.
-7. **Deliver.** Give the path to the built `.html` and keep the `.src.html` next to it, because later edits go to the source. On macOS, `open <name>.html`.
+**Get a good first build in front of the reader fast, then iterate.** Refining facts with the reader is worth more than extra time spent deliberating over structure. Pick the obvious component from the router, write, build and open. The reader's comments drive the next round, and live reload shows each round in their open tab.
+
+Each step below is one turn.
+
+1. **Gather, in one turn.** Read `references/components.md`, the type reference and the rule files the page needs, in one command (`cat a.md b.md c.md`). `references/components.md` is the complete markup contract, so never open the component source. If the user will review the page in this session, run `listen.sh` in the same turn (see Reviews and iteration).
+2. **Route and write.** List the pieces of information and give each one the obvious component from the router below. Two rules are not optional, however fast you go:
+   - **The `h1` or the lede states the answer**: the verdict, the finding, the recommendation, with its key number. Never the topic ("UK VAT questions"), the source ("Answers from production data"), or a question.
+   - **If the reader must decide or do something, the first screen says what.**
+
+   Apply the rest of the refinement pass as a quick check while you draft, not as a separate deliberation. Then write `<name>.src.html` in one go, starting from the skeleton. Name the file by kind, for example `postmortem_queue-backlog.src.html`.
+3. **Build and verify, in one command.** Run `node <skill-dir>/scripts/build.mjs <name>.src.html --verify`. It writes `<name>.html` with only the components the markup uses, then checks it in headless Chrome. `<skill-dir>` is the base directory shown when this skill loads. If it prints ✗ lines, fix exactly those in the source and run it again. If Chrome isn't available, say so in one line and deliver.
+4. **Deliver.** Give the path to the built `.html`, and keep the `.src.html` next to it, because later edits go to the source. On macOS, `open <name>.html`.
+5. **Iterate.** Each round of feedback is one small `Edit` to the `.src.html` and one `build.mjs --verify`. Fix the facts first. Change the structure only when the reader asks, or when a section plainly fails the refinement check. With the listener running, the reader's open tab reloads itself and shows what changed.
+
+Add `--shots <dir>` only when a ✗ line is about layout and you need to see it.
 
 ## Router
 
@@ -61,13 +69,11 @@ Pick the simplest component that shows the information's shape.
 
 ## Refinement pass
 
-After the first build, ask of every section: **is this the easiest, simplest and best way to display this information so the reader understands it fastest?** If the answer is no for a section, restructure it.
+Apply this while drafting, not as a separate rebuild. Ask of every section: **is this the easiest, simplest and best way to display this information so the reader understands it fastest?** If the answer is no, restructure it before you write the file.
 
 - **Minto pyramid.** Put the answer in one sentence first. Follow it with three to five grouped supporting points, and put the evidence last.
 - **Show first, then tell.** The visual (timeline, flow, table, stats) comes before the prose that explains it.
 - **Progressive disclosure.** The first screen holds the answer and its visual. Supporting detail sits in later sections or in `<details>`.
-
-Do one pass, then stop.
 
 ## Skeleton
 
@@ -83,8 +89,8 @@ Do one pass, then stop.
 <body>
 <header class="masthead">
   <p class="eyebrow">Postmortem · Payments · 2026-10-18</p>
-  <h1>Payment confirmations were delayed for 64 minutes.</h1>
-  <p class="lede">One sentence with the answer and the impact.</p>
+  <h1>Payment confirmations were delayed for 64 minutes.</h1>  <!-- the answer, not the topic -->
+  <p class="lede">One sentence with the cause, the impact in numbers, and what the reader must do.</p>
 </header>
 <div class="page"><nav class="toc"></nav><main>
   <section id="summary">
@@ -116,7 +122,7 @@ The tray lists all comments, exports Markdown, Slack bullets or JSON, and copies
 2. On `STATUS=STARTED`, arm a persistent Monitor on `tail -f <LOG> | grep --line-buffered HTML_ARTIFACT_SUBMIT`. On `RUNNING`, the Monitor is already armed.
 3. Build with `HTML_ARTIFACT_SUBMIT_URL=<URL> node <skill-dir>/scripts/build.mjs <name>.src.html`.
 
-**Send to Claude** in the tray then arrives as a notification carrying the JSON export. On `STATUS=UNAVAILABLE`, which covers web sessions and machines without Node, build without the URL; Send then copies the JSON for the user to paste.
+**Send to Claude** in the tray then arrives as a notification carrying the JSON export. Every later build with the same `HTML_ARTIFACT_SUBMIT_URL` reloads the reader's open tab in place, at the same scroll position. On `STATUS=UNAVAILABLE`, which covers web sessions and machines without Node, build without the URL; Send then copies the JSON for the user to paste.
 
 When a review arrives:
 

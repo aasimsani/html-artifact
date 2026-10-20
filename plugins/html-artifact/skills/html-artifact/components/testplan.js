@@ -71,8 +71,9 @@
       return { flow, fills: fs, label };
     });
 
-    const stepState = new Map(); // id -> { status, notes }
-    const setters = new Map(); // id -> status => void
+    // stepState maps a step id to { status, notes }; setters maps it to a status setter.
+    const stepState = new Map();
+    const setters = new Map();
 
     const summarize = ids => {
       const c = { total: ids.length, pass: 0, fail: 0, blocked: 0, skipped: 0, pending: 0 };

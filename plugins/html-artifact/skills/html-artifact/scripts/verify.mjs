@@ -21,7 +21,9 @@ const SMALL_TEXT = `(() => {
     const el = n.parentElement;
     if (!n.textContent.trim() || !el || !el.checkVisibility()) continue;
     let px = parseFloat(getComputedStyle(el).fontSize);
-    if (el.closest('svg')) px *= el.getScreenCTM()?.a ?? 1;
+    // SVG text scales with its viewBox. HTML inside a foreignObject scales with the foreignObject.
+    const scaler = el instanceof SVGGraphicsElement ? el : el.closest('svg') ? el.closest('foreignObject') : null;
+    if (scaler?.getScreenCTM) px *= scaler.getScreenCTM()?.a ?? 1;
     if (px < 11.5) out.push(Math.round(px * 10) / 10 + 'px "' + n.textContent.trim().slice(0, 30) + '"');
   }
   return out;
@@ -65,6 +67,8 @@ async function check(browser, file, shots) {
   const desk = await browser.open(url);
   const lightBg = await desk.eval(BG);
   const small = await desk.eval(SMALL_TEXT);
+  // Diagram labels (.fo inside a foreignObject) hide overflow, so a label too long for its box is silently cut.
+  const clipped = await desk.eval(`[...document.querySelectorAll('foreignObject .fo')].filter(d => d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1).map(d => d.textContent.trim().slice(0, 30))`);
   const hasReview = await desk.eval(`!!document.querySelector('[data-component="review"]')`);
   if (shots) await desk.screenshot(`${shots}/${name}-desktop.png`);
   if (hasReview) {
@@ -75,8 +79,11 @@ async function check(browser, file, shots) {
       if (!(await desk.eval(PROBE_COUNT))) problems.push('selection helper did not appear after selecting text');
     }
   }
-  for (const e of desk.errors) problems.push(`console error: ${e.slice(0, 200)}`);
-  for (const u of new Set(desk.external)) problems.push(`external request: ${u.slice(0, 120)}`);
+  // The session receiver lives on loopback, so its traffic and its refusals when it's down don't count.
+  const LOOPBACK = /https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//;
+  for (const e of desk.errors.filter(e => !LOOPBACK.test(e))) problems.push(`console error: ${e.slice(0, 200)}`);
+  for (const u of new Set(desk.external.filter(u => !LOOPBACK.test(u)))) problems.push(`external request: ${u.slice(0, 120)}`);
+  if (clipped.length) problems.push(`${clipped.length} diagram labels are clipped by their box, e.g. "${clipped[0]}". Make the box bigger or the label shorter`);
   if (small.length) problems.push(`${small.length} text runs under 12px, e.g. ${small.slice(0, 3).join(', ')}`);
   await desk.close();
 

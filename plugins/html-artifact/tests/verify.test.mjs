@@ -24,9 +24,25 @@ const secretFixture = () => {
   return file;
 };
 
+// A page that talks to a session receiver on loopback, which isn't running here.
+const loopbackFixture = () => {
+  const dir = mkdtempSync(join(tmpdir(), 'verify-loopback-'));
+  const file = join(dir, 'loopback.html');
+  writeFileSync(file, readFileSync(fx('good'), 'utf8').replace('</main>', '</main><script>new EventSource("http://127.0.0.1:9/events?t=x");</script>'));
+  return file;
+};
+
+// A diagram label too long for its 30px box.
+const clippedFixture = () => {
+  const dir = mkdtempSync(join(tmpdir(), 'verify-clipped-'));
+  const file = join(dir, 'clipped.html');
+  writeFileSync(file, readFileSync(fx('good'), 'utf8').replace('</main>', `<svg viewBox="0 0 200 40" width="200" height="40"><foreignObject x="0" y="0" width="120" height="30"><div class="fo" xmlns="http://www.w3.org/1999/xhtml" style="height:100%;overflow:hidden;font-size:14px">Authentication and authorization service</div></foreignObject></svg></main>`));
+  return file;
+};
+
 let results;
 before(async () => {
-  const list = await verify([fx('bad'), fx('good'), fx('review'), fx('review-broken'), fx('review-lede'), secretFixture(), fx('redacted')]);
+  const list = await verify([fx('bad'), fx('good'), fx('review'), fx('review-broken'), fx('review-lede'), secretFixture(), fx('redacted'), loopbackFixture(), clippedFixture()]);
   results = Object.fromEntries(list.map(r => [r.file.match(/(\w[\w-]*)\.html$/)[1], r]));
 });
 
@@ -44,6 +60,10 @@ test('flags a review page whose helper never appears', () => has(results['review
 
 test('flags credential-shaped strings', () => has(results.secret, /possible secret/));
 test('passes typed placeholders and env-var references', () => assert.deepEqual(results.redacted.problems, []));
+
+test('loopback connections to the session receiver are not external requests or errors', () => assert.deepEqual(results.loopback.problems, []));
+
+test('flags diagram labels clipped by their box', () => has(results.clipped, /clipped/));
 
 test('cli exits 1 on problems and 0 on a clean page', () => {
   assert.throws(() => execFileSync('node', [VERIFY, fx('bad')], { stdio: 'pipe' }), e => e.status === 1);

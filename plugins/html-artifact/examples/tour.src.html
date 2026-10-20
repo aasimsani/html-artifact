@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="artifact-id" content="html-artifact-v2-tour">
+<meta name="review-label" content="Review">
+<meta name="review-severities" content="Issue, Suggestion, Question, Nit, Praise">
+<title>html-artifact v2 — a tour of every component</title>
+<style>
+#toast-preview { margin: 12px 0 20px; padding: 18px; border: 1px dashed var(--rule-strong); border-radius: 8px; }
+#toast-preview .toast { display: inline-block; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: var(--bg); transform: translateY(var(--lift, 0px)); transition: transform var(--duration, 300ms) var(--easing, ease-out); box-shadow: var(--shadow); }
+#toast-preview:hover .toast { transform: translateY(calc(var(--lift, 0px) - 12px)); }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <p class="eyebrow">Design doc · Public API · 2026-10-19 · tour of html-artifact v2</p>
+  <h1>Rate-limit each API key with a token bucket in Redis.</h1>
+  <p class="lede">Two customers caused 80% of throttled traffic last month, and today's only limit is a global 5,000 requests per second. A per-key bucket of 100 rps with a burst of 300 isolates them, and costs one Redis round trip per request.</p>
+</header>
+<div class="page"><nav class="toc"></nav><main>
+
+<section id="start">
+  <p class="eyebrow">01 · Start here</p>
+  <h2>Every block on this page is a v2 component.</h2>
+  <aside class="callout" data-tone="q"><b>Try the review loop.</b> Select any sentence and press + Comment, or mark it for deletion or replacement. Tick "Reviewed" on a section. Answer the decisions in section 02. Then open <b>Review</b> at the bottom right and press <b>Send to Claude</b>. It goes straight into the Claude session that built this page.</aside>
+  <dl class="stats">
+    <div data-tone="crit"><dt>Throttled traffic from two keys</dt><dd>80%</dd></div>
+    <div><dt>Global limit today</dt><dd>5,000 rps</dd></div>
+    <div data-tone="good"><dt>Proposed per-key rate</dt><dd>100 rps</dd></div>
+    <div><dt>Burst allowance</dt><dd>300</dd></div>
+  </dl>
+  <p>The page is one self-contained file. The agent wrote about 20 KB of plain HTML, and <code>build.mjs</code> inlined only the components that HTML uses. It works offline, in dark mode (try the Theme button), and on a phone.</p>
+</section>
+
+<section id="decisions">
+  <p class="eyebrow">02 · Decisions</p>
+  <h2>Two calls the platform team needs to make.</h2>
+  <p>Each block marks the recommended answer. Send to Claude reports every block as <code>chosen</code>, <code>default kept</code> or <code>not opened</code>, so silence never reads as agreement.</p>
+  <div class="ask" data-id="redis-down" data-default="open">
+    <p><b>When Redis is unavailable, the limiter should…</b></p>
+    <label><input type="radio" name="redis-down" value="open"> Fail open, and allow traffic under the global limit only</label>
+    <label><input type="radio" name="redis-down" value="closed"> Fail closed, and return 503 until Redis recovers</label>
+  </div>
+  <div class="ask" data-id="internal-keys" data-default="exempt">
+    <p><b>Should internal service keys be exempt?</b></p>
+    <label><input type="radio" name="internal-keys" value="exempt"> Exempt them</label>
+    <label><input type="radio" name="internal-keys" value="limit"> Limit them like any customer key</label>
+  </div>
+</section>
+
+<section id="architecture">
+  <p class="eyebrow">03 · Architecture</p>
+  <h2>The limiter sits between auth and the handlers.</h2>
+  <figure class="flow"><ol>
+    <li>Client<small>SDK or browser</small></li>
+    <li data-label="HTTPS">Edge proxy<small>global 5k rps</small></li>
+    <li data-label="key">Auth<small>resolves the API key</small></li>
+    <li data-label="per key" data-tone="low">Rate limiter<small>token bucket</small></li>
+    <li data-label="allowed">Handlers<small>unchanged</small></li>
+  </ol><figcaption>The request path. Only the limiter is new.</figcaption></figure>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 230" role="img" aria-label="The limiter, Redis, and the 429 path">
+      <g class="node" data-detail="Resolves the API key and attaches it to the request. Nothing changes here."><rect x="20" y="40" width="150" height="56" rx="6"/><text x="95" y="68">auth</text></g>
+      <g class="node hot" data-detail="Takes one token from the key's bucket. 100 tokens refill per second, and the bucket holds at most 300."><rect x="255" y="40" width="150" height="56" rx="6"/><text x="330" y="68">rate limiter</text></g>
+      <g class="node" data-detail="Unchanged API handlers."><rect x="490" y="40" width="150" height="56" rx="6"/><text x="565" y="68">handlers</text></g>
+      <g class="node store" data-detail="One key per API key: tokens and the last refill time, written with a Lua script so the update is atomic."><path d="M260,160 a70,10 0 0 1 140,0 v40 a70,10 0 0 1 -140,0 z"/><text x="330" y="190">Redis</text></g>
+      <g class="node problem" data-detail="Returned with Retry-After set to the seconds until one token refills."><rect x="490" y="150" width="150" height="56" rx="6"/><text x="565" y="178">429 response</text></g>
+      <path class="edge" d="M170,68 L253,68"/>
+      <path class="edge hot" d="M405,68 L488,68"/>
+      <path class="edge" d="M330,96 L330,148"/>
+      <path class="edge problem" d="M405,90 L488,165"/>
+      <g class="label"><rect x="180" y="46" width="64" height="18"/><text x="212" y="55">request</text></g>
+      <g class="label"><rect x="410" y="46" width="72" height="18"/><text x="446" y="55">allowed</text></g>
+      <g class="label"><rect x="338" y="113" width="92" height="18"/><text x="384" y="122">EVALSHA</text></g>
+      <g class="label"><rect x="408" y="126" width="64" height="18"/><text x="440" y="135">empty</text></g>
+    </svg>
+    <figcaption>Click any box for what it does. The accent edge is the happy path, and the red edge is the throttle path.</figcaption>
+  </figure>
+</section>
+
+<section id="rollout">
+  <p class="eyebrow">04 · Rollout</p>
+  <h2>Shadow mode first, then enforce per plan.</h2>
+  <ol class="stepper">
+    <li><b>Shadow</b> count, don't block</li>
+    <li data-tone="low"><b>Enforce for free keys</b> 100 rps</li>
+    <li data-tone="low"><b>Enforce for paid keys</b> per-plan limits</li>
+    <li data-tone="good"><b>Remove global cap</b> edge stays as backstop</li>
+  </ol>
+  <div class="roadmap" data-start="2026-10-01" data-end="2027-01-31" data-today="2026-10-19">
+    <div class="lane" data-name="Platform">
+      <span data-start="2026-10-01" data-end="2026-10-25" data-tone="good">Limiter core</span>
+      <span data-start="2026-10-26" data-end="2026-11-20" data-tone="high">Shadow mode</span>
+    </div>
+    <div class="lane" data-name="API">
+      <span data-start="2026-11-15" data-end="2026-12-15" data-tone="low">429 + Retry-After</span>
+      <span data-start="2026-12-16" data-end="2027-01-25" data-status="planned">Per-plan limits</span>
+    </div>
+  </div>
+  <ol class="timeline">
+    <li data-tone="crit"><time>Sep 12</time> Two keys exhaust the global limit for 40 minutes.</li>
+    <li><time>Sep 20</time> The incident review asks for per-key limits.</li>
+    <li data-tone="good"><time>Oct 19</time> This design goes out for review.</li>
+  </ol>
+</section>
+
+<section id="options">
+  <p class="eyebrow">05 · Alternatives</p>
+  <h2>A token bucket beats fixed windows on bursts.</h2>
+  <p>Drag a weight and the totals and winner update live.</p>
+  <table class="matrix">
+    <thead><tr><th>Option</th><th class="num" data-weight="5">Burst safety</th><th class="num" data-weight="3">Simplicity</th><th class="num" data-weight="4">Per-key data</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      <tr><td>Token bucket in Redis</td><td class="num">9</td><td class="num">6</td><td class="num">9</td><td class="num total"></td></tr>
+      <tr><td>Fixed-window counters</td><td class="num">4</td><td class="num">9</td><td class="num">9</td><td class="num total"></td></tr>
+      <tr><td>Limits in the edge proxy</td><td class="num">7</td><td class="num">8</td><td class="num">2</td><td class="num total"></td></tr>
+    </tbody>
+  </table>
+  <p class="verdict"></p>
+  <p>Last month's throttled keys, sortable and filterable:</p>
+  <table data-sortable>
+    <thead><tr><th>Key</th><th>Plan</th><th class="num">Throttled requests</th><th class="num">Share</th></tr></thead>
+    <tbody>
+      <tr><td>key_acme_prod</td><td>Free</td><td class="num">1,204,000</td><td class="num">52%</td></tr>
+      <tr><td>key_globex_batch</td><td>Pro</td><td class="num">648,000</td><td class="num">28%</td></tr>
+      <tr><td>key_initech_web</td><td>Pro</td><td class="num">231,000</td><td class="num">10%</td></tr>
+      <tr><td>key_umbrella_etl</td><td>Enterprise</td><td class="num">139,000</td><td class="num">6%</td></tr>
+      <tr><td>other keys</td><td>—</td><td class="num">92,000</td><td class="num">4%</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="review">
+  <p class="eyebrow">06 · Code review</p>
+  <h2>The limiter PR: one blocking issue.</h2>
+  <dl class="stats">
+    <div data-tone="crit"><dt>Blocking</dt><dd>1</dd></div>
+    <div data-tone="q"><dt>Questions</dt><dd>1</dd></div>
+    <div data-tone="nit"><dt>Nits</dt><dd>1</dd></div>
+  </dl>
+  <ol class="ranked">
+    <li><label><input type="checkbox"> <b>F1:</b> the refill uses wall-clock time from the API host.</label><small>Clock skew between hosts lets a key refill early. Blocking.</small></li>
+    <li><label><input type="checkbox"> <b>F2:</b> what happens on a Lua script cache miss?</label><small>A NOSCRIPT error after a Redis failover would fail every request.</small></li>
+  </ol>
+  <table class="findings">
+    <thead><tr><th>ID</th><th>Severity</th><th>Where</th><th>Finding</th></tr></thead>
+    <tbody>
+      <tr data-tone="crit"><td><a href="#F1">F1</a></td><td>issue · blocking</td><td><code>limiter/bucket.py:22</code></td><td>Refill time comes from the host clock.</td></tr>
+      <tr data-tone="q"><td><a href="#F2">F2</a></td><td>question</td><td><code>limiter/bucket.py:31</code></td><td>NOSCRIPT after failover is unhandled.</td></tr>
+      <tr data-tone="nit"><td><a href="#F3">F3</a></td><td>nit</td><td><code>limiter/config.py:4</code></td><td>Name the burst constant.</td></tr>
+    </tbody>
+  </table>
+  <ol class="risk">
+    <li data-tone="crit" style="--w:85"><code>limiter/bucket.py</code> runs on every request</li>
+    <li data-tone="good" style="--w:15"><code>limiter/config.py</code> two constants</li>
+  </ol>
+  <div class="annotated" data-file="limiter/bucket.py">
+<pre class="diff"><code>@@ -18,8 +18,12 @@ def take(key: str) -> bool:
+     bucket = redis.hgetall(key)
+-    now = time.time()
++    now = time.time()                        ⟦F1⟧
++    tokens = min(BURST, bucket.tokens + (now - bucket.ts) * RATE)
++    if tokens &lt; 1:
++        return False
+     redis.evalsha(TAKE_SHA, 1, key, now)     ⟦F2⟧
+     return True</code></pre>
+    <ol class="notes">
+      <li id="F1" data-tone="crit"><b>issue · blocking</b> Use Redis <code>TIME</code> inside the script, so every host refills from one clock.</li>
+      <li id="F2" data-tone="q"><b>question</b> After a failover the script cache is empty. Catch NOSCRIPT and fall back to <code>EVAL</code>.</li>
+    </ol>
+  </div>
+  <div class="annotated" data-file="limiter/config.py">
+<pre class="diff"><code>@@ -1,4 +1,5 @@
+ RATE = 100
+-LIMIT = 300
++BURST = 300                                  ⟦F3⟧</code></pre>
+    <ol class="notes"><li id="F3" data-tone="nit"><b>nit</b> Say what bounds it: <code>MAX_BURST_TOKENS</code>.</li></ol>
+  </div>
+</section>
+
+<section id="testplan">
+  <p class="eyebrow">07 · Test plan</p>
+  <h2>Verify the limiter before enforcing.</h2>
+  <div class="testplan" data-id="limiter">
+    <section class="tp-flow" data-title="A key hits its limit" data-minutes="5">
+      <div class="tp-step" data-id="f1-s1"><dl>
+        <dt>Action</dt><dd>Send 320 requests in one second with <code>hey -n 320 -c 50 $API/ping</code>.</dd>
+        <dt>Pass</dt><dd>About 300 succeed and the rest return 429 with <code>Retry-After</code>.</dd>
+        <dt>Watch</dt><dd>All 200s means the limiter is failing open.</dd></dl></div>
+      <div class="tp-step" data-id="f1-s2"><dl>
+        <dt>Action</dt><dd>Wait one second and send 100 more.</dd>
+        <dt>Pass</dt><dd>All 100 succeed, because the bucket refilled.</dd>
+        <dt>Watch</dt><dd>429s here mean the refill is too slow.</dd></dl></div>
+    </section>
+    <section class="tp-flow" data-title="Redis goes away" data-minutes="10">
+      <div class="tp-step" data-id="f2-s1"><dl>
+        <dt>Action</dt><dd>Stop the Redis replica in staging, then send traffic.</dd>
+        <dt>Pass</dt><dd>Requests keep succeeding under the global cap.</dd>
+        <dt>Watch</dt><dd>503s mean the limiter failed closed.</dd></dl></div>
+    </section>
+  </div>
+</section>
+
+<section id="data">
+  <p class="eyebrow">08 · Data</p>
+  <h2>Throttle events from the last week.</h2>
+  <div class="explorer" data-id="throttles" data-facets="plan,region" data-time="day">
+    <script type="application/json">[
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-12","throttled":41200},
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-13","throttled":38900},
+      {"key":"key_globex_batch","plan":"Pro","region":"EU","day":"2026-10-13","throttled":22100},
+      {"key":"key_initech_web","plan":"Pro","region":"US","day":"2026-10-14","throttled":9100},
+      {"key":"key_umbrella_etl","plan":"Enterprise","region":"EU","day":"2026-10-15","throttled":5400},
+      {"key":"key_globex_batch","plan":"Pro","region":"EU","day":"2026-10-16","throttled":24800},
+      {"key":"key_acme_prod","plan":"Free","region":"US","day":"2026-10-17","throttled":44100},
+      {"key":"key_hooli_api","plan":"Free","region":"APAC","day":"2026-10-18","throttled":3100}
+    ]</script>
+    <p>Eight daily rows from the edge logs, embedded in the page.</p>
+  </div>
+</section>
+
+<section id="schema">
+  <p class="eyebrow">09 · Schema</p>
+  <h2>Where limits are configured.</h2>
+  <div class="erd" data-id="limits">
+    <table class="entity" data-name="plans"><caption>plans</caption>
+      <tr data-col="id" data-pk><td>id</td><td>text</td></tr>
+      <tr data-col="rate"><td>rate</td><td>int</td></tr>
+      <tr data-col="burst"><td>burst</td><td>int</td></tr>
+    </table>
+    <table class="entity" data-name="api_keys"><caption>api_keys</caption>
+      <tr data-col="id" data-pk><td>id</td><td>text</td></tr>
+      <tr data-col="plan_id" data-ref="plans.id"><td>plan_id</td><td>text</td></tr>
+      <tr data-col="org_id" data-ref="orgs.id"><td>org_id</td><td>uuid</td></tr>
+    </table>
+    <table class="entity" data-name="orgs"><caption>orgs</caption>
+      <tr data-col="id" data-pk><td>id</td><td>uuid</td></tr>
+      <tr data-col="name"><td>name</td><td>text</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="ideas">
+  <p class="eyebrow">10 · Ideas</p>
+  <h2>What else limits could do.</h2>
+  <ul class="mindmap" data-id="ideas">
+    <li>Rate limits
+      <ul>
+        <li data-tone="keep">Per-plan limits
+          <ul><li>Read from plans table</li><li data-tone="maybe">Burst credits for annual plans</li></ul>
+        </li>
+        <li data-tone="maybe">Customer dashboard of throttles</li>
+        <li data-tone="drop">Limits per endpoint</li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<section id="variants">
+  <p class="eyebrow">11 · Variants</p>
+  <h2>Three ways to tell a customer they're throttled.</h2>
+  <div class="variants" data-id="messaging">
+    <article class="variant" data-id="a"><h3>Header only</h3><p><code>Retry-After: 2</code> and a bare 429.</p>
+      <ul class="pros"><li>Standard</li></ul><ul class="cons"><li>Silent in most SDK logs</li></ul></article>
+    <article class="variant" data-id="b"><h3>Header + JSON body</h3><p>Adds <code>{"error":"rate_limited","limit":100}</code>.</p>
+      <ul class="pros"><li>Self-explaining</li></ul><ul class="cons"><li>Clients must parse it</li></ul></article>
+    <article class="variant" data-id="c"><h3>Email on sustained throttling</h3><p>Emails the key owner after 10 minutes of 429s.</p>
+      <ul class="pros"><li>Reaches humans</li></ul><ul class="cons"><li>Noisy during incidents</li></ul></article>
+  </div>
+</section>
+
+<section id="tune">
+  <p class="eyebrow">12 · Tune</p>
+  <h2>Feel the throttle toast before you ship it.</h2>
+  <form class="playground" data-id="toast" data-target="#toast-preview">
+    <label>Duration <input type="range" name="duration" min="100" max="1000" value="300" data-unit="ms"></label>
+    <label>Lift <input type="range" name="lift" min="0" max="24" value="0" data-unit="px"></label>
+    <label>Easing <select name="easing"><option>ease-out</option><option>linear</option><option>cubic-bezier(.2,.9,.3,1.3)</option></select></label>
+    <button type="button" data-preset='{"duration":150,"lift":8}'>Snappy</button>
+    <button type="reset">Reset</button>
+  </form>
+  <div id="toast-preview"><span class="toast">Slow down: retry in 2s.</span></div>
+</section>
+
+<section id="triage">
+  <p class="eyebrow">13 · Triage</p>
+  <h2>Sort the follow-up tickets.</h2>
+  <ol class="editor-list" data-id="tickets" data-labels="must,should,later" data-tones="crit,high,nit">
+    <li data-id="RL-1">Use Redis TIME in the take script <small>F1</small></li>
+    <li data-id="RL-2">Handle NOSCRIPT after failover <small>F2</small></li>
+    <li data-id="RL-3">Shadow-mode dashboard <small>observability</small></li>
+    <li data-id="RL-4">Rename LIMIT to MAX_BURST_TOKENS <small>F3</small></li>
+  </ol>
+</section>
+
+<section id="followups">
+  <p class="eyebrow">14 · Follow-ups</p>
+  <h2>Why the last incident happened, and who does what.</h2>
+  <ol class="chain">
+    <li>A batch customer started a backfill with 50 parallel workers.</li>
+    <li data-tone="crit"><b>Defect.</b> Only a global limit exists, so one key could take the whole budget.</li>
+    <li>Every other customer saw 429s for 40 minutes.</li>
+  </ol>
+  <p>The fix <span class="claim" data-evidence="verified">isolates keys from each other</span>, and it <span class="claim" data-evidence="guess">should cut p99 latency during bursts</span>.</p>
+  <ul class="checklist">
+    <li><label><input type="checkbox"> Ship the limiter in shadow mode</label> <span class="owner">Dana · Oct 25</span></li>
+    <li><label><input type="checkbox"> Add a throttle-rate alert</label> <span class="owner">Ravi · Nov 1</span></li>
+    <li><label><input type="checkbox"> Email the top five throttled customers</label> <span class="owner">Mei · Nov 8</span></li>
+  </ul>
+  <div class="bar" role="img" aria-label="Share of throttled requests by key">
+    <span style="--v:52" data-tone="crit">acme 52%</span>
+    <span style="--v:28" data-tone="high">globex 28%</span>
+    <span style="--v:20">others 20%</span>
+  </div>
+</section>
+
+</main></div>
+</body>
+</html>

@@ -63,7 +63,7 @@ export async function launch() {
     listeners.set(sessionId, [(method, p) => {
       if (method === 'Runtime.exceptionThrown') page.errors.push(p.exceptionDetails.exception?.description || p.exceptionDetails.text);
       if (method === 'Runtime.consoleAPICalled' && p.type === 'error') page.errors.push(p.args.map(a => a.value ?? a.description).join(' '));
-      if (method === 'Log.entryAdded' && p.entry.level === 'error') page.errors.push(p.entry.text);
+      if (method === 'Log.entryAdded' && p.entry.level === 'error') page.errors.push(p.entry.url ? `${p.entry.text} (${p.entry.url})` : p.entry.text);
       if (method === 'Network.requestWillBeSent' && !LOCAL.test(p.request.url)) page.external.push(p.request.url);
       if (method === 'Page.loadEventFired') loaded();
     }]);

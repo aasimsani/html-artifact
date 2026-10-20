@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from '../skills/html-artifact/scripts/build.mjs';
 import { verify } from '../skills/html-artifact/scripts/verify.mjs';
+import { doc, fixture } from './helpers.mjs';
 import { launch } from '../skills/html-artifact/scripts/cdp.mjs';
 
 const TARGET = 'the sync job overwrote the product mapping';
@@ -148,4 +149,18 @@ test('the tray counts open comments and the drawer shows the export', async () =
   await p.close();
   assert.match(label, /2/);
   assert.match(out, /Which sync job\?/);
+});
+
+test('on a phone the review pill stays off the first screen until the reader scrolls', async () => {
+  const fx2 = fixture(doc(Array(30).fill('<p>Filler paragraph long enough to make the phone page scroll a fair way down.</p>').join('\n')));
+  const p = await browser.open(fx2.url, { width: 400 });
+  const top = await p.eval(`getComputedStyle(document.querySelector('.rv-tray')).opacity`);
+  const scrolled = await p.eval(`(async () => { scrollTo(0, innerHeight * 1.5); await new Promise(r => setTimeout(r, 400)); return getComputedStyle(document.querySelector('.rv-tray')).opacity; })()`);
+  await p.close();
+  const desk = await browser.open(fx2.url);
+  const deskTop = await desk.eval(`getComputedStyle(document.querySelector('.rv-tray')).opacity`);
+  await desk.close();
+  assert.equal(top, '0');
+  assert.equal(scrolled, '1');
+  assert.equal(deskTop, '1');
 });

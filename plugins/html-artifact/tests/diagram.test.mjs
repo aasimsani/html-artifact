@@ -19,6 +19,8 @@ const BODY = `
     <path class="edge" d="M170,68 L248,68"/>
     <path class="edge async" d="M330,96 L330,148"/>
     <g class="label"><rect x="180" y="44" width="60" height="18"/><text x="210" y="57">request</text></g>
+    <g class="node"><rect x="460" y="40" width="160" height="64" rx="6"/>
+      <foreignObject x="460" y="40" width="160" height="64"><div class="fo" xmlns="http://www.w3.org/1999/xhtml">Authentication and authorization service<small>tier 0</small></div></foreignObject></g>
   </svg>
   <figcaption>The limiter reads and writes Redis on every request.</figcaption>
 </figure>`;
@@ -78,4 +80,16 @@ test('copy svg produces standalone markup with inline colours', async () => {
   assert.match(svg, /^<svg[^>]*xmlns="http:\/\/www.w3.org\/2000\/svg"/);
   assert.match(svg, /stroke="rgb/);
   assert.doesNotMatch(svg, /var\(--/);
+});
+
+test('a .fo label inside foreignObject wraps to fit its box', async () => {
+  const p = await browser.open(fx.url);
+  const r = await p.eval(`(() => { const d = document.querySelector('.diagram .fo'); const cs = getComputedStyle(d);
+    return { over: d.scrollWidth - d.clientWidth, overY: d.scrollHeight - d.clientHeight, wrap: cs.overflowWrap, size: parseFloat(cs.fontSize), align: cs.textAlign, pad: parseFloat(cs.paddingLeft) }; })()`);
+  await p.close();
+  assert.ok(r.over <= 1 && r.overY <= 1, JSON.stringify(r));
+  assert.ok(r.size >= 12);
+  assert.equal(r.wrap, 'anywhere');
+  assert.equal(r.align, 'center');
+  assert.ok(r.pad >= 8, 'label needs 8px of padding');
 });
