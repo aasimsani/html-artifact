@@ -23,7 +23,8 @@ Use `figure.flow` for a straight chain of up to six steps. Draw inline SVG for a
 ## Text never overflows
 
 - Size each box from its label: width ≥ characters × 8 + 32 at 14px. Never guess a width.
-- Wrap any label longer than about 12 characters in a `<foreignObject>` containing a `<div>`, which wraps text. Plain `<text>` never wraps.
+- Wrap any label longer than about 12 characters in `<foreignObject …><div class="fo" xmlns="http://www.w3.org/1999/xhtml">Label<small>detail</small></div></foreignObject>`, sized to the node's rect. The `.fo` class centres, pads and wraps the text. Plain `<text>` never wraps.
+- Don't tune coordinates by eye. Lay nodes out on a simple grid (for example, columns 220px apart and rows 100px apart), build with `--verify`, and fix only what it reports. A clipped label shows up as a ✗ line.
 - Keep 8px of padding between text and the box edge.
 - A label over 32 characters is a sentence. Shorten it.
 

@@ -86,3 +86,14 @@ P1–P5 done ─► P6 router + prompts ─► P7 content components ─► P8 c
 - [ ] Missed: $2.18 per artifact against $1.60. Next step: cut turns by merging the verify and refine passes, and trim the reference reads.
 - [ ] Missed: the design judge scored 42% against 71%. Next step: judge a screenshot or the `.src.html`, not 150 KB of built HTML.
 - [ ] Missed: built pages average 128 KB against 60 KB. Next step: minify components at build time.
+
+### Iteration 2.1 — speed to first build, then iterate (2026-10-20)
+
+The user re-aimed the work: optimize time to a good first build, then fast review rounds, and ignore cost. Refining facts with the reader beats deliberating over structure.
+
+- [x] `build.mjs --verify` builds and checks in one call, and SKILL.md gathers references in one turn and refines while drafting. The bench runs that completed took 86–205 s against v2's 296 s average.
+- [x] Live reload. `build.mjs` announces each rewrite to the session receiver, and open pages reload in place at the same scroll position (2 tests).
+- [x] Minified runtime. A typical document's runtime is about 53 KB, guarded by a 55 KB budget test.
+- [x] Blind screenshot judge (`bench/judge.py`), replacing the text-only design judge.
+- [x] A tour example in `plugins/html-artifact/examples/` uses every component.
+- [x] Bench timeouts traced to a slow API window, while the account's five-hour usage sat at 86–87%. The same RCA case took about 850 s in that window and 114–118 s after it reset. Don't run large benches near the usage limit, because it also throttles the user's own sessions.

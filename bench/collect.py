@@ -20,7 +20,10 @@ OUT = BENCH / "runs" / "out"
 def main(result_files: list[str]) -> None:
     meta_path = OUT / "meta.json"
     meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
-    for rf in map(Path, result_files):
+    for spec in result_files:
+        # "arm=path" names the arm explicitly; otherwise the file stem names it.
+        forced, _, path = spec.rpartition("=")
+        rf = Path(path)
         result = json.loads(rf.read_text())
         for case in result["cases"]:
             name = case["name"]
@@ -30,7 +33,7 @@ def main(result_files: list[str]) -> None:
             if original.exists():
                 shutil.copy(original, dest / "original.html")
             for arm_key, runs in case["arms"].items():
-                arm = rf.stem.removeprefix("cr-") if arm_key == "with" else "baseline"
+                arm = (forced or rf.stem.removeprefix("cr-")) if arm_key == "with" else "baseline"
                 # Several runs per case are averaged; the first run that wrote a page supplies the HTML.
                 found = False
                 for run in runs:

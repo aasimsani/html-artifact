@@ -4,6 +4,18 @@ Write the markup below. `build.mjs` sees which classes and attributes the page u
 
 Tones: any element can carry `data-tone="crit|high|med|low|good|q|nit"`, which sets its severity colour.
 
+Theme variables, for page-specific CSS and SVG fills (each one has a dark-mode value):
+
+| Variable | Use |
+|---|---|
+| `--bg`, `--bg-elev`, `--bg-sunken` | page, raised surface, inset surface |
+| `--ink`, `--ink-2`, `--ink-3`, `--ink-4` | text, from strongest to faintest |
+| `--rule`, `--rule-strong` | borders and dividers |
+| `--accent`, `--accent-soft` | links, the changed or happy path |
+| `--sev-crit`, `--sev-high`, `--sev-med`, `--sev-low`, `--sev-good`, `--sev-q`, each with a `-bg` twin | severity ink and fills |
+| `--diff-add`, `--diff-del`, `--diff-hunk` | diff backgrounds |
+| `--mono`, `--sans`, `--serif` | font stacks |
+
 ## Page
 
 | Markup | What it does |
@@ -100,6 +112,7 @@ For anything with branches, stores or actors, hand-draw SVG inside `figure.diagr
 | `node` + `hot` / `problem` / `external` / `store` | changed / broken / third-party (dashed) / data store |
 | `edge` + `async` / `fallback` / `hot` / `problem` | solid sync call / dashed / dotted / accent / crit |
 | `label` (a `rect` + `text`) | an edge label with a background, so crossings stay readable |
+| `foreignObject` holding `div.fo` (plus an optional `<small>`) | a node label that wraps inside its box. Use it for any label longer than about 12 characters. `verify` reports a label that its box clips |
 
 ## Numbers
 
