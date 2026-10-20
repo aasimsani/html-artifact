@@ -90,3 +90,5 @@ mark.rv-mark[data-kind="replace"] { border-bottom-style: dashed; }
 .rv-diff[hidden] { display: none; }
 .rv-diff ins { text-decoration: none; background: var(--diff-add-2); }
 .rv-diff del { background: var(--diff-del-2); }
+.rv-tray { transition: opacity .15s, transform .15s; }
+.rv-tray.rv-tucked { opacity: 0; transform: translateY(12px); pointer-events: none; }

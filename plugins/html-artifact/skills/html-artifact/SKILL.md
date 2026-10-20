@@ -26,7 +26,11 @@ If you are unsure, ask yourself whether the reader will do anything with the pag
 Each step below is one turn.
 
 1. **Gather, in one turn.** Read `references/components.md`, the type reference and the rule files the page needs, in one command (`cat a.md b.md c.md`). `references/components.md` is the complete markup contract, so never open the component source. If the user will review the page in this session, run `listen.sh` in the same turn (see Reviews and iteration).
-2. **Route and write.** List the pieces of information and give each one the obvious component from the router below. Apply the refinement pass as a quick check while you draft, not as a separate deliberation. Then write `<name>.src.html` in one go, starting from the skeleton. Name the file by kind, for example `postmortem_queue-backlog.src.html`.
+2. **Route and write.** List the pieces of information and give each one the obvious component from the router below. Two rules are not optional, however fast you go:
+   - **The `h1` or the lede states the answer**: the verdict, the finding, the recommendation, with its key number. Never the topic ("UK VAT questions"), the source ("Answers from production data"), or a question.
+   - **If the reader must decide or do something, the first screen says what.**
+
+   Apply the rest of the refinement pass as a quick check while you draft, not as a separate deliberation. Then write `<name>.src.html` in one go, starting from the skeleton. Name the file by kind, for example `postmortem_queue-backlog.src.html`.
 3. **Build and verify, in one command.** Run `node <skill-dir>/scripts/build.mjs <name>.src.html --verify`. It writes `<name>.html` with only the components the markup uses, then checks it in headless Chrome. `<skill-dir>` is the base directory shown when this skill loads. If it prints ✗ lines, fix exactly those in the source and run it again. If Chrome isn't available, say so in one line and deliver.
 4. **Deliver.** Give the path to the built `.html`, and keep the `.src.html` next to it, because later edits go to the source. On macOS, `open <name>.html`.
 5. **Iterate.** Each round of feedback is one small `Edit` to the `.src.html` and one `build.mjs --verify`. Fix the facts first. Change the structure only when the reader asks, or when a section plainly fails the refinement check. With the listener running, the reader's open tab reloads itself and shows what changed.
@@ -85,8 +89,8 @@ Apply this while drafting, not as a separate rebuild. Ask of every section: **is
 <body>
 <header class="masthead">
   <p class="eyebrow">Postmortem · Payments · 2026-10-18</p>
-  <h1>Payment confirmations were delayed for 64 minutes.</h1>
-  <p class="lede">One sentence with the answer and the impact.</p>
+  <h1>Payment confirmations were delayed for 64 minutes.</h1>  <!-- the answer, not the topic -->
+  <p class="lede">One sentence with the cause, the impact in numbers, and what the reader must do.</p>
 </header>
 <div class="page"><nav class="toc"></nav><main>
   <section id="summary">

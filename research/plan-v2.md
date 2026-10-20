@@ -97,3 +97,9 @@ The user re-aimed the work: optimize time to a good first build, then fast revie
 - [x] Blind screenshot judge (`bench/judge.py`), replacing the text-only design judge.
 - [x] A tour example in `plugins/html-artifact/examples/` uses every component.
 - [x] Bench timeouts traced to a slow API window, while the account's five-hour usage sat at 86–87%. The same RCA case took about 850 s in that window and 114–118 s after it reset. Don't run large benches near the usage limit, because it also throttles the user's own sessions.
+
+### Iteration 2.2 — answer first is not optional (2026-10-20)
+
+- [x] Per-case judge notes showed v2.1 headlines and ledes naming the topic or source instead of the answer, because demoting the refinement pass also dropped answer-first. It's now a hard rule in the write step, along with "say on the first screen what the reader must decide".
+- [x] On phones the Review pill waits until the reader scrolls or starts reviewing, so it no longer covers first-screen content (1 test).
+- [x] On the three affected cases, "understand in 10 s" went from 5.9 (v2.1) to 8.7, above v2's 8.3. Visual went to 7.7 and phone to 7.2, with runs taking 74–167 s.

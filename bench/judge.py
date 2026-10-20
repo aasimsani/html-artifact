@@ -54,14 +54,16 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", default="baseline,ours,v2,v21,dogum,flabs")
     ap.add_argument("--runs", type=int, default=2)
+    ap.add_argument("--cases", default="", help="comma-separated case-name prefixes; default is every case")
     args = ap.parse_args()
     arms = args.arms.split(",")
     meta = json.loads((OUT / "meta.json").read_text())
     results = {}
-    for case in sorted(meta):
+    prefixes = [c for c in args.cases.split(",") if c]
+    for case in sorted(c for c in meta if not prefixes or any(c.startswith(p) for p in prefixes)):
         results[case] = [judge_case(case, arms, seed) for seed in range(args.runs)]
         print(case, json.dumps({a: [r.get(a, {}).get("understand") for r in results[case]] for a in arms}))
-    (OUT / "judge.json").write_text(json.dumps(results, indent=2))
+    (OUT / ("judge.json" if not prefixes else "judge-subset.json")).write_text(json.dumps(results, indent=2))
 
     print("\narm        understand  visual  phone   (mean over cases and judge runs)")
     for a in arms:
