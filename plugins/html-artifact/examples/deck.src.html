@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="artifact-id" content="html-artifact-v2-deck">
+<title>Per-key rate limits — a four-slide deck</title>
+</head>
+<body class="deck">
+<header class="masthead">
+  <p class="eyebrow">Deck · Platform review · 2026-10-19 · example for html-artifact v2</p>
+  <h1>Per-key rate limits stop one customer from throttling the rest.</h1>
+  <p class="lede">Four slides for the platform review. Press Present and use the arrow keys, or scroll and comment on each slide like any other page.</p>
+</header>
+<div class="page"><nav class="toc"></nav><main>
+
+<section class="slide" id="problem">
+  <p class="eyebrow">1 · Problem</p>
+  <h2>Two keys caused 80% of last month's throttled traffic.</h2>
+  <dl class="stats">
+    <div data-tone="crit"><dt>Throttled traffic from two keys</dt><dd>80%</dd></div>
+    <div><dt>Global limit today</dt><dd>5,000 rps</dd></div>
+    <div data-tone="high"><dt>Outage on Sep 12</dt><dd>40 min</dd></div>
+  </dl>
+  <aside class="notes">Open with the September 12 incident. One batch customer took the whole global budget, and every other customer saw 429s.</aside>
+</section>
+
+<section class="slide" id="proposal">
+  <p class="eyebrow">2 · Proposal</p>
+  <h2>A token bucket per API key sits between auth and the handlers.</h2>
+  <figure class="flow"><ol>
+    <li>Edge proxy<small>global 5k rps</small></li>
+    <li data-label="key">Auth<small>resolves the API key</small></li>
+    <li data-label="per key" data-tone="low">Rate limiter<small>100 rps, burst of 300</small></li>
+    <li data-label="allowed">Handlers<small>unchanged</small></li>
+  </ol></figure>
+  <aside class="notes">Only the limiter is new. It costs one Redis round trip per request.</aside>
+</section>
+
+<section class="slide" id="rollout">
+  <p class="eyebrow">3 · Rollout</p>
+  <h2>Shadow mode comes first, then enforcement plan by plan.</h2>
+  <ol class="stepper">
+    <li><b>Shadow</b> count, don't block</li>
+    <li data-tone="low"><b>Free keys</b> 100 rps</li>
+    <li data-tone="low"><b>Paid keys</b> per-plan limits</li>
+    <li data-tone="good"><b>Remove global cap</b> edge stays as backstop</li>
+  </ol>
+  <aside class="notes">Shadow mode runs for four weeks, so the limits are set from measured traffic.</aside>
+</section>
+
+<section class="slide" id="decision">
+  <p class="eyebrow">4 · Decision</p>
+  <h2>One call is needed today: what the limiter does when Redis is down.</h2>
+  <div class="ask" data-id="redis-down" data-default="open">
+    <p><b>When Redis is unavailable, the limiter should…</b></p>
+    <label><input type="radio" name="redis-down" value="open"> Fail open, and allow traffic under the global limit only</label>
+    <label><input type="radio" name="redis-down" value="closed"> Fail closed, and return 503 until Redis recovers</label>
+  </div>
+  <aside class="notes">Failing open is the recommendation, because failing closed turns a Redis outage into an API outage.</aside>
+</section>
+
+</main></div>
+</body>
+</html>

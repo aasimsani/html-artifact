@@ -158,3 +158,17 @@ The source is `anthropics/claude-plugins-community/html-plan`. Each idea lands a
 - [x] The root README points at it.
 - [x] One run of `code-only` scored 1.00 with the README inside `evals/`, so the loader ignores the file.
 - [ ] Not built: a script that turns `aggregate-result.json` into a log row. The rows are written by hand.
+
+### Iteration 2.4 — README screenshots and demo (2026-11-12)
+
+#### Phase 1 — cropped screenshots in the Chrome helper ✅
+
+- [x] RED: `page.screenshot(path, { selector, scale, pad })` writes an image the size of the box that holds every match, padded and scaled, and a `.webp` path writes WebP. A selector that matches nothing is an error.
+- [x] GREEN: `cdp.mjs` clips the capture to that box and picks the format from the file extension (1 test).
+
+#### Phase 2 — demo images and README ✅
+
+- [x] `examples/deck.src.html` is a four-slide deck, because a deck can't sit inside the tour page. It builds and passes `--verify`.
+- [x] `docs/shots.mjs` captures 18 WebP images into `docs/screenshots/` (1.5 MB): the tour's first screen in both themes, the review drawer with one comment, one crop per component family, and one slide in present mode. The crops are taken at 860px, because the text diagram scrolls sideways in a narrower column.
+- [x] The README shows the first screen under the opening paragraph and a two-column gallery under Components, and says how to open the demo. A local render with GitHub's table and image rules shows two 415px columns and no sideways scroll.
+- [ ] Not built: a hosted demo. The README tells the reader to clone the repo and open the file, because GitHub shows an `.html` file as source.
