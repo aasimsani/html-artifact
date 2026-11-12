@@ -86,8 +86,24 @@ export async function launch() {
       await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x2, y: y2, button: 'left', buttons: 1 });
       await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: x2, y: y2, ...base });
     };
-    page.screenshot = async path => {
-      const { data } = await s('Page.captureScreenshot', { format: 'png' });
+    // With a selector, the capture is cropped to the box that holds every match, even below the first screen.
+    // `pad` widens that box, `scale` multiplies the pixel density, and a path that ends in .webp writes WebP.
+    page.screenshot = async (path, { selector, scale = 1, pad = 0 } = {}) => {
+      const params = path.endsWith('.webp') ? { format: 'webp', quality: 90 } : { format: 'png' };
+      if (selector || scale !== 1) {
+        const rects = selector ? `[...document.querySelectorAll(${JSON.stringify(selector)})].map(e => e.getBoundingClientRect())` : '[{ left: 0, top: 0, right: innerWidth, bottom: innerHeight }]';
+        const box = await page.eval(`(() => {
+          const rs = ${rects};
+          if (!rs.length) throw new Error(${JSON.stringify(`no element matches ${selector}`)});
+          const edge = (pick, side) => Math[pick](...rs.map(r => r[side]));
+          const x = Math.max(0, edge('min', 'left') + scrollX - ${pad}), y = Math.max(0, edge('min', 'top') + scrollY - ${pad});
+          return { x, y, width: edge('max', 'right') + scrollX + ${pad} - x, height: edge('max', 'bottom') + scrollY + ${pad} - y };
+        })()`);
+        // Chrome lays the page out again at full height for a capture past the viewport, which moves fixed
+        // elements. A capture of the viewport itself therefore stays inside it.
+        Object.assign(params, { clip: { ...box, scale }, captureBeyondViewport: !!selector });
+      }
+      const { data } = await s('Page.captureScreenshot', params);
       writeFileSync(path, Buffer.from(data, 'base64'));
     };
     page.close = () => send('Target.closeTarget', { targetId });
