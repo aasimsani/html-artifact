@@ -1,5 +1,5 @@
 {
   "name": "html-artifact",
   "description": "Reviewable, interactive single-file HTML documents built from reusable components: RFCs, design docs, plans, code reviews, postmortems, reports, decision memos, test plans, data explorers, mind maps and more. Dark mode, phone layout, comments and highlights that survive edits, decision blocks, and Send to Claude for a review loop with no copy-paste.",
-  "version": "2.0.0"
+  "version": "2.2.0"
 }

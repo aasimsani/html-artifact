@@ -1,6 +1,6 @@
 # Diagram rules
 
-Use `figure.flow` for a straight chain of up to six steps. Draw inline SVG for anything with branches, stores, actors or feedback loops, and follow every rule below.
+Use `figure.flow` for a straight chain of up to six steps. For anything with branches, stores, actors or feedback loops, write a text diagram (`script type="text/diagram"`, see `components.md`) and follow the rules below. The build lays it out and sizes every box. Hand-draw SVG only for a shape the text can't express, such as a sequence diagram with lifelines or layered bands.
 
 ## Pick the type from the question
 
@@ -16,22 +16,29 @@ Use `figure.flow` for a straight chain of up to six steps. Draw inline SVG for a
 ## Layout
 
 - Pick one direction, left to right or top to bottom, and keep it for the whole diagram.
-- Put every node on a grid. Leave at least 40px between neighbouring boxes.
+- Place every node with grid rows. Put the main path on the first row, and the stores and the ways out below it.
+- Use four columns at most and add rows instead, because a phone scrolls a wide diagram sideways.
 - Keep a diagram to 12 nodes or fewer. Split a bigger picture into a map plus one detail diagram per zone.
+- When the build says an edge runs through a node, move the nodes in the grid rows until the two ends are neighbours.
+
+## Labels
+
+- A node label over 32 characters is a sentence. Shorten it, and move the rest to the sublabel or the `# detail`.
+- An edge label is a few words, 28 characters at most.
+
+## When you hand-draw SVG
+
+- Put every node on a grid, for example columns 220px apart and rows 100px apart. Leave at least 40px between neighbouring boxes.
 - Use `viewBox` and no fixed width, so the figure scales.
-
-## Text never overflows
-
 - Size each box from its label: width ≥ characters × 8 + 32 at 14px. Never guess a width.
 - Wrap any label longer than about 12 characters in `<foreignObject …><div class="fo" xmlns="http://www.w3.org/1999/xhtml">Label<small>detail</small></div></foreignObject>`, sized to the node's rect. The `.fo` class centres, pads and wraps the text. Plain `<text>` never wraps.
-- Don't tune coordinates by eye. Lay nodes out on a simple grid (for example, columns 220px apart and rows 100px apart), build with `--verify`, and fix only what it reports. A clipped label shows up as a ✗ line.
-- Keep 8px of padding between text and the box edge.
-- A label over 32 characters is a sentence. Shorten it.
+- Don't tune coordinates by eye. Build with `--verify`, and fix only what it reports. A clipped label shows up as a ✗ line.
+- Put a small rectangle filled with `var(--bg-elev)` behind each edge label, so the label stays readable where lines cross.
+- Use `currentColor` or theme variables for every stroke and fill, and set labels in `var(--mono)` at 12–14px.
 
 ## Edges
 
 - Label every arrow with the data it carries ("FINALIZED sales", "429 + Retry-After"), not the function that moves it.
-- Put a small rectangle filled with `var(--bg-elev)` behind each edge label, so the label stays readable where lines cross.
 - Solid means a synchronous call. Dashed means asynchronous (a queue or event). Dotted means optional or a fallback. The crit tone marks the problem path.
 
 ## Shapes
@@ -40,8 +47,6 @@ Use `figure.flow` for a straight chain of up to six steps. Draw inline SVG for a
 - Use colour for meaning only (changed, problem, owner), and use at most three colours. Add a legend whenever shape or colour carries meaning.
 - Highlight the happy path or the changed part in `var(--accent)`, and keep everything else neutral.
 
-## Ink and fonts
+## Caption
 
-- Use `currentColor` or theme variables for every stroke and fill, so the figure works in dark mode.
-- Set labels in `var(--mono)` at 12–14px. The smallest text in a figure is 12px at its rendered size.
-- Caption every figure with what the reader should take from it, in one sentence.
+- Caption every figure with what the reader should take from it, in one sentence. The caption is also the picture's accessible name.

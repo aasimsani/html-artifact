@@ -83,6 +83,7 @@ main li + li { margin-top: 4px; }
 a { color: var(--accent); text-underline-offset: 2px; }
 strong { font-weight: 600; }
 hr { border: 0; border-top: 1px solid var(--rule); margin: 32px 0; }
+blockquote { margin: 12px 0; padding: 2px 16px; max-width: 72ch; border-left: 3px solid var(--rule-strong); color: var(--ink-2); }
 
 code { font: .88em var(--mono); background: var(--bg-sunken); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
 pre { font: 13px/1.55 var(--mono); background: var(--bg-sunken); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; margin: 16px 0; overflow-x: auto; max-width: 100%; }

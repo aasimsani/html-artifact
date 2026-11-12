@@ -103,3 +103,58 @@ The user re-aimed the work: optimize time to a good first build, then fast revie
 - [x] Per-case judge notes showed v2.1 headlines and ledes naming the topic or source instead of the answer, because demoting the refinement pass also dropped answer-first. It's now a hard rule in the write step, along with "say on the first screen what the reader must decide".
 - [x] On phones the Review pill waits until the reader scrolls or starts reviewing, so it no longer covers first-screen content (1 test).
 - [x] On the three affected cases, "understand in 10 s" went from 5.9 (v2.1) to 8.7, above v2's 8.3. Visual went to 7.7 and phone to 7.2, with runs taking 74–167 s.
+
+### Iteration 2.3 — five ideas from html-plan (2026-11-12)
+
+The source is `anthropics/claude-plugins-community/html-plan`. Each idea lands as a build step or a component, so the page contract stays "write markup, run `build.mjs`".
+
+| Idea | Where it lands |
+|---|---|
+| Source lint | `scripts/lint.mjs`, run by every build. Lint lines print as ✗ and the build exits 1 |
+| Code filled from the repo | `pre[data-src][data-lines]`, filled by `build.mjs` from `--root` |
+| Diagram DSL with grid placement | `script[type="text/diagram"]` inside `figure.diagram`, turned into the existing SVG markup at build time by `scripts/diagram.mjs` |
+| Mockups | a new `mock` component: `figure.mock` with a `<template>`, a frame and numbered pins |
+| Decision navigation and consequences | `ask.js`: an "N to answer" button and `[data-if="id=value"]` |
+
+#### Phase 1 — source lint ✅
+
+- [x] `scripts/lint.mjs` checks a question or topic `h1`, `div.ask` ids and defaults, duplicate ids, dangling anchors, margin notes over 40 words and a raw tag inside `pre` (14 tests). `build.mjs` prints each problem as a ✗ line and exits 1, and it still writes the page.
+
+#### Phase 2 — code filled from the repo ✅
+
+- [x] `build.mjs` fills `pre[data-src][data-lines]` from `--root`, escapes it, infers the language and prints a `code from:` line (8 tests). It refuses a path outside the root, a secrets file and a slice that holds a secret-shaped string. `verify.mjs` and the fill share one `SECRETS` pattern, which now lives in `lint.mjs`.
+- [ ] Not built: a diff filled from `git diff`. An annotated diff carries `⟦F1⟧` markers on its lines, so a filled diff needs a way to attach notes by line number first.
+
+#### Phase 3 — diagram DSL with grid placement ✅
+
+- [x] `scripts/diagram.mjs` turns `script[type="text/diagram"]` inside `figure.diagram` into the SVG markup the diagram kit already styles, so the runtime gains no bytes (15 tests). Nodes sit on `| a | b |` grid rows, boxes grow to fit their labels, and a generated diagram keeps its size and scrolls inside its own box on a phone.
+- [x] The same parse reports what is wrong: an unknown node, a node missing from the grid, more than 12 nodes or 4 columns, a label that is too long, and an edge that runs through another node.
+- [x] The detail panel now takes its title from a wrapped label.
+
+#### Phase 4 — mockups ✅
+
+- [x] The `mock` component renders a `figure.mock` template inside a shadow root at its design width, shrinks it to fit the column, draws a browser, phone or terminal frame, and puts a numbered badge on each pin's target (9 tests). The lint reports a mock with no template and a pin whose `data-ref` matches nothing.
+
+#### Phase 5 — decision navigation and consequences ✅
+
+- [x] `[data-if="id=value"]` shows a block only under that answer, and a button counts the decisions not opened yet and jumps to the next one (5 tests). On a phone the button waits until the reader scrolls, like the review pill. The lint reports a `data-if` that names no decision or no option.
+
+#### Phase 6 — docs ✅
+
+- [x] `SKILL.md` router and build step, `references/components.md`, `references/rules/diagrams.md`, the README and the tour example cover the five features. The plugin version is 2.2.0. The suite is 210 of 210 green.
+- [ ] Not measured: a bench run that compares build time and output tokens against v2.1.
+
+#### Phase 7 — plugin eval and prompt edits ✅
+
+- [x] `claude plugin eval` on the five features, 3 runs per case with a no-plugin arm: code-only 1.00, short-question 1.00, postmortem 1.00, design-doc 0.87, for $4.72 in 242 s. Two design-doc runs drew the request path as a text diagram, and the `flow-component` grader accepted only `class="flow"`. The grader now also accepts `type="text/diagram"`, and hand-drawn SVG still fails it.
+- [x] Time per run is level with the 2026-10-19 record: the design doc took 64 s then and 63–82 s now, and the postmortem took 70 s then and 53–73 s now. Neither case has repo code to fill, so the eval can't show what `data-src` saves.
+- [x] Prompt edits: `SKILL.md` spells out what a review comment may never trigger, and says a shared review holds other people's words. `types/plan.md` and `types/spec.md` gain a "Why" quote under the lede, a "Not changing" section and decisions placed in the section they change. `blockquote` has a style (1 test). The suite is 211 of 211 green.
+- [x] The first design-doc run after those edits scored 0.89. One page kept an "Open questions" section that only pointed at the decisions, and no page quoted the request. After the wording said to drop that section and named the user's message as the request, the design doc scored 1.00 on 3 of 3 runs, each with the request quoted.
+- [ ] Not covered: no eval case exercises the plan type, and 2 of those 3 design docs grouped their decisions in a "Decisions" section of their own.
+
+#### Phase 8 — eval log in the repo ✅
+
+- [x] `plugins/html-artifact/evals/README.md` says when to run the eval, gives the two commands, explains the scores and holds one log row per run. The log has five rows, two from 2026-10-19 and three from 2026-11-12. The raw `results/` folder stays ignored, because each file holds absolute paths from the machine that ran it.
+- [x] The root README points at it.
+- [x] One run of `code-only` scored 1.00 with the README inside `evals/`, so the loader ignores the file.
+- [ ] Not built: a script that turns `aggregate-result.json` into a log row. The rows are written by hand.

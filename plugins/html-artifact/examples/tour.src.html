@@ -43,6 +43,8 @@
     <label><input type="radio" name="redis-down" value="open"> Fail open, and allow traffic under the global limit only</label>
     <label><input type="radio" name="redis-down" value="closed"> Fail closed, and return 503 until Redis recovers</label>
   </div>
+  <p data-if="redis-down=open">Then a Redis outage lifts every per-key limit, and only the global 5k rps cap holds.</p>
+  <p data-if="redis-down=closed">Then a Redis outage takes the API down with it.</p>
   <div class="ask" data-id="internal-keys" data-default="exempt">
     <p><b>Should internal service keys be exempt?</b></p>
     <label><input type="radio" name="internal-keys" value="exempt"> Exempt them</label>
@@ -60,23 +62,29 @@
     <li data-label="per key" data-tone="low">Rate limiter<small>token bucket</small></li>
     <li data-label="allowed">Handlers<small>unchanged</small></li>
   </ol><figcaption>The request path. Only the limiter is new.</figcaption></figure>
-  <figure class="diagram">
-    <svg viewBox="0 0 660 230" role="img" aria-label="The limiter, Redis, and the 429 path">
-      <g class="node" data-detail="Resolves the API key and attaches it to the request. Nothing changes here."><rect x="20" y="40" width="150" height="56" rx="6"/><text x="95" y="68">auth</text></g>
-      <g class="node hot" data-detail="Takes one token from the key's bucket. 100 tokens refill per second, and the bucket holds at most 300."><rect x="255" y="40" width="150" height="56" rx="6"/><text x="330" y="68">rate limiter</text></g>
-      <g class="node" data-detail="Unchanged API handlers."><rect x="490" y="40" width="150" height="56" rx="6"/><text x="565" y="68">handlers</text></g>
-      <g class="node store" data-detail="One key per API key: tokens and the last refill time, written with a Lua script so the update is atomic."><path d="M260,160 a70,10 0 0 1 140,0 v40 a70,10 0 0 1 -140,0 z"/><text x="330" y="190">Redis</text></g>
-      <g class="node problem" data-detail="Returned with Retry-After set to the seconds until one token refills."><rect x="490" y="150" width="150" height="56" rx="6"/><text x="565" y="178">429 response</text></g>
-      <path class="edge" d="M170,68 L253,68"/>
-      <path class="edge hot" d="M405,68 L488,68"/>
-      <path class="edge" d="M330,96 L330,148"/>
-      <path class="edge problem" d="M405,90 L488,165"/>
-      <g class="label"><rect x="180" y="46" width="64" height="18"/><text x="212" y="55">request</text></g>
-      <g class="label"><rect x="410" y="46" width="72" height="18"/><text x="446" y="55">allowed</text></g>
-      <g class="label"><rect x="338" y="113" width="92" height="18"/><text x="384" y="122">EVALSHA</text></g>
-      <g class="label"><rect x="408" y="126" width="64" height="18"/><text x="440" y="135">empty</text></g>
-    </svg>
+  <figure class="diagram"><script type="text/diagram">
+auth     = auth # Resolves the API key and attaches it to the request. Nothing changes here.
+limiter  = rate limiter / token bucket [hot] # Takes one token from the key's bucket. 100 tokens refill per second, and the bucket holds at most 300.
+handlers = handlers # Unchanged API handlers.
+redis    = Redis [store] # One key per API key: tokens and the last refill time, written with a Lua script so the update is atomic.
+throttle = 429 response [problem] # Returned with Retry-After set to the seconds until one token refills.
+
+| auth | limiter | handlers |
+| .    | redis   | throttle |
+
+auth -> limiter : request
+limiter -> handlers : allowed [hot]
+limiter -> redis : EVALSHA
+limiter -> throttle : empty [problem]
+</script>
     <figcaption>Click any box for what it does. The accent edge is the happy path, and the red edge is the throttle path.</figcaption>
+  </figure>
+  <figure class="mock" data-frame="terminal" data-title="curl" data-w="470"><template><span class="dim">$</span> curl -i https://api.example.com/v1/orders
+<span class="r">HTTP/2 429</span>
+<span data-ref="retry">retry-after: 1</span>
+<span class="dim">{"error": "rate_limited", "limit": 100}</span></template>
+    <ol class="pins"><li data-ref="retry"><b>New header.</b> It holds the seconds until one token refills.</li></ol>
+    <figcaption>What a throttled client sees.</figcaption>
   </figure>
 </section>
 

@@ -46,6 +46,9 @@ main .flow li:first-child { margin-left: 0; }
 .diagram .detail b { display: block; font: 600 12px var(--mono); text-transform: uppercase; color: var(--accent); }
 .diagram .tools { display: flex; gap: 8px; margin-top: 6px; }
 .diagram .copy-svg { font: 12px var(--mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--bg-elev); color: var(--ink-2); cursor: pointer; }
+/* A diagram the build draws from text keeps its size, and a wide one scrolls inside its own box. */
+.diagram .scroll { overflow-x: auto; }
+.diagram .scroll svg { width: auto; max-width: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
 /* <foreignObject x y width height><div class="fo" xmlns="http://www.w3.org/1999/xhtml">Long label<small>detail</small></div></foreignObject>
    A label that wraps inside its box, for anything longer than about 12 characters. */

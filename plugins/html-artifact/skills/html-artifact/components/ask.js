@@ -2,8 +2,27 @@
 // Decision blocks. Each <div class="ask" data-id data-default> registers as ask:<id> with
 // { answer, status, note }. Status is "not opened" until the reader touches the block, then
 // "default kept" or "chosen".
+//
+// Any element with data-if="id=value" (or id!=value) shows only while that decision holds that
+// answer, which is how a page states what each option changes. A floating button counts the
+// decisions nobody has opened yet and jumps to the next one.
 (() => {
   const HA = window.HA;
+  const asks = [];
+  const conditionals = [...document.querySelectorAll('[data-if]')];
+  const next = Object.assign(document.createElement('button'), { type: 'button', className: 'ask-next', hidden: true });
+  next.dataset.ui = '';
+  const sync = () => {
+    const answers = Object.fromEntries(asks.map(a => [a.id, a.answer()]));
+    for (const el of conditionals) {
+      const m = el.dataset.if.match(/^([\w-]+)(!?=)(.*)$/);
+      if (m) el.hidden = (answers[m[1]] === m[3]) === (m[2] === '!=');
+    }
+    const left = asks.filter(a => a.status() === 'not opened').length;
+    next.hidden = !left;
+    next.textContent = `${left} to answer`;
+  };
+
   document.querySelectorAll('.ask').forEach((box, n) => {
     const id = box.dataset.id || `ask-${n + 1}`;
     const def = box.dataset.default || '';
@@ -33,7 +52,9 @@
       box.dataset.status = s;
       status.textContent = s === 'not opened' ? `Not answered yet. The recommendation is ${labelOf(def)}.`
         : s === 'default kept' ? 'You kept the recommendation.' : `You chose ${labelOf(answer())}.`;
+      sync();
     };
+    asks.push({ id, box, answer, status: statusOf });
     HA.register(`ask:${id}`, {
       el: box,
       state: () => ({ answer: answer(), status: statusOf(), note: note.value }),
@@ -52,4 +73,21 @@
     note.addEventListener('input', changed);
     show();
   });
+  if (!asks.length) return;
+
+  next.addEventListener('click', () => {
+    const box = asks.find(a => a.status() === 'not opened')?.box;
+    if (!box) return;
+    for (let d = box.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
+    box.scrollIntoView({ block: 'center' });
+    // Focus shows the reader where they landed. It doesn't count as an answer.
+    box.querySelector('input')?.focus({ preventScroll: true });
+  });
+  // On a phone the button would cover the first screen's content, so it waits until the reader scrolls.
+  const narrow = matchMedia('(max-width: 700px)');
+  const tuck = () => next.classList.toggle('ask-tucked', narrow.matches && scrollY < innerHeight * 0.6);
+  addEventListener('scroll', tuck, { passive: true });
+  narrow.addEventListener('change', tuck);
+  tuck();
+  document.body.append(next);
 })();
