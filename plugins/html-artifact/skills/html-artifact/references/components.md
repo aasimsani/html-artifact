@@ -93,7 +93,33 @@ Both lists get a live "N / M done" line, and ticks are saved per page.
 
 ## Diagrams
 
-For anything with branches, stores or actors, hand-draw SVG inside `figure.diagram` and follow `rules/diagrams.md`. The kit adds arrowheads to every `.edge`, a Copy SVG button, and a detail panel for nodes that carry `data-detail`.
+For anything with branches, stores or actors, write the diagram as text inside `figure.diagram` and follow `rules/diagrams.md`. The build lays the nodes out and draws the SVG, so you never write a coordinate.
+
+```html
+<figure class="diagram"><script type="text/diagram">
+edge    = Edge proxy / global 5k rps
+limiter = Rate limiter / token bucket [hot] # Holds one token bucket per API key.
+redis   = Redis [store]
+jobs    = Retry queue [queue]
+
+| edge | limiter |
+| jobs | redis   |
+
+edge -> limiter : request
+limiter --> redis : INCR
+limiter ..> jobs : 429 + Retry-After [problem]
+</script><figcaption>The limiter writes Redis asynchronously.</figcaption></figure>
+```
+
+| Line | Meaning |
+|---|---|
+| `id = Label / sublabel [kind] # detail` | A node. The kinds are `hot` (changed), `problem` (broken), `external` (third-party, dashed), `store` (cylinder) and `queue` (pill). The detail opens when the reader clicks the node |
+| `\| a \| b \| . \|` | One grid row. It places nodes left to right, and `.` leaves a cell empty. Up to four nodes need no rows and sit in one line |
+| `a -> b : label` | An edge. `->` is a synchronous call, `-->` is asynchronous (dashed) and `..>` is a fallback (dotted). End the line with `[hot]` or `[problem]` to colour it. Put spaces around the arrow |
+
+The build prints a ✗ line for a diagram it can't draw well: an unknown node, more than 12 nodes or 4 columns, a label over 32 characters, or an edge that runs through another node. When an edge runs through a node, move the nodes in the grid rows.
+
+Hand-draw SVG inside `figure.diagram` only for a shape the text can't express, such as a sequence diagram with lifelines. The kit adds arrowheads to every `.edge`, a Copy SVG button, and a detail panel for nodes that carry `data-detail`.
 
 ```html
 <figure class="diagram">
@@ -114,6 +140,34 @@ For anything with branches, stores or actors, hand-draw SVG inside `figure.diagr
 | `label` (a `rect` + `text`) | an edge label with a background, so crossings stay readable |
 | `foreignObject` holding `div.fo` (plus an optional `<small>`) | a node label that wraps inside its box. Use it for any label longer than about 12 characters. `verify` reports a label that its box clips |
 
+## Mockups
+
+Show a screen, a dialog or a command's output as real HTML in a frame. The mock renders in a shadow root, so page styles don't reach it. Style it with inline styles or a `<style>` inside the template.
+
+```html
+<figure class="mock" data-frame="browser" data-w="440" data-url="postbox.app/compose">
+  <template>
+    <div style="padding:16px">
+      <button>Send</button> <button data-ref="later">Send later ▾</button>
+    </div>
+  </template>
+  <ol class="pins"><li data-ref="later"><b>New button.</b> Send is unchanged.</li></ol>
+  <figcaption>The composer gains one button.</figcaption>
+</figure>
+
+<figure class="mock" data-frame="terminal" data-title="postbox"><template><span class="dim">&gt;</span> postbox send --at "mon 8:00"
+<span class="g">✓</span> Scheduled for <b>Mon 8:00</b></template></figure>
+```
+
+| Attribute | What it sets |
+|---|---|
+| `data-frame` | `none` (the default), `browser`, `phone` or `terminal` |
+| `data-w` | The width you design at, in px. The default is 440, or 375 for a phone. The mock shrinks to fit a narrower column |
+| `data-url`, `data-title` | The text in a browser or terminal bar |
+| `ol.pins > li[data-ref]` | A numbered pin. Its badge sits beside the template element with the same `data-ref`, and its text is listed under the mock. Put `data-ref` on the smallest element that makes the point |
+
+Draw the smallest region that makes the point: one card, one menu, one row. A terminal mock keeps its line breaks, and the classes `dim`, `g`, `r`, `y` and `b` colour its text.
+
 ## Numbers
 
 ```html
@@ -132,12 +186,17 @@ For anything else numeric, draw an SVG chart that follows `rules/charts.md`.
 <!-- Syntax colours for python, js, ts, sql, bash -->
 <pre><code class="language-python">def load(path): ...</code></pre>
 
+<!-- Code that exists in the repo. The build fills the block from the file, so never retype it -->
+<pre data-src="core/sync.py" data-lines="10-24"></pre>
+
 <!-- A unified diff; lines get added, removed and hunk colours -->
 <pre class="diff" data-file="core/sync.py"><code>@@ -10,4 +10,5 @@
 -    db.save(config)
 +    if config:
 +        db.save(config)</code></pre>
 ```
+
+A `data-src` path resolves under `--root`, which defaults to the directory you run the build from. The build refuses a path outside the root, a file named like a secrets file and a slice that holds a secret-shaped string. It prints a `code from:` line that lists every file the page now holds. In code you type by hand, write `&lt;` for every `<`.
 
 ## Tables
 
@@ -164,7 +223,12 @@ A plain `<table>` gets the theme's table style and scrolls inside its own box on
   <label><input type="radio" name="redis-down" value="open"> Fail open and allow traffic</label>
   <label><input type="radio" name="redis-down" value="closed"> Fail closed and return 503</label>
 </div>
+
+<!-- Shown only under that answer, so the reader sees what each option changes. Use id=value or id!=value -->
+<p data-if="redis-down=closed">Then a Redis outage takes the API down with it.</p>
 ```
+
+A button in the corner counts the decisions the reader hasn't opened yet and jumps to the next one.
 
 ## Code review
 

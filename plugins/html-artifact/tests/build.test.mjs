@@ -130,3 +130,79 @@ test('build --verify builds the page and reports problems in the same call', () 
   assert.throws(() => execFileSync('node', [BUILD, join(dir, 'bad.src.html'), '--verify'], { stdio: 'pipe' }),
     e => e.status === 1 && /overflow at 400px/.test(e.stdout.toString()));
 });
+
+// ---- Code filled from the repo: <pre data-src="path" data-lines="a-b"> ----
+
+function repo() {
+  const root = mkdtempSync(join(tmpdir(), 'fill-root-'));
+  mkdirSync(join(root, 'core'));
+  writeFileSync(join(root, 'core', 'sync.py'), 'import db\n\ndef sync(a: list[int]) -> bool:\n    return a < [1] & True\n# end\n');
+  writeFileSync(join(root, '.env'), 'TOKEN=abc\n');
+  writeFileSync(join(root, 'core', 'keys.py'), `KEY = "${['sk', 'live', '51HxQwErTyUiOpAsDfGhJkLz'].join('_')}"\n`);
+  return root;
+}
+const filled = (pre, root, extra = {}) => {
+  const problems = [], embedded = [];
+  const out = build(bare(pre), { componentsDir: join(fixtureDir(), 'components'), root, problems, embedded, ...extra });
+  return { out, problems, embedded, pre: out.match(/<pre\b[\s\S]*?<\/pre>/)[0] };
+};
+
+test('data-src fills the block with the named lines, escaped, and infers the language', () => {
+  const r = filled('<pre data-src="core/sync.py" data-lines="3-4"></pre>', repo());
+  assert.equal(r.pre, '<pre data-src="core/sync.py" data-lines="3-4"><code class="language-python">def sync(a: list[int]) -&gt; bool:\n    return a &lt; [1] &amp; True</code></pre>');
+  assert.deepEqual(r.problems, []);
+  assert.deepEqual(r.embedded, ['core/sync.py:3-4']);
+});
+
+test('data-src keeps an existing code tag, takes one line, or takes the whole file', () => {
+  const root = repo();
+  assert.match(filled('<pre data-src="core/sync.py" data-lines="1"><code class="language-text">stale</code></pre>', root).pre, /<code class="language-text">import db<\/code>/);
+  assert.match(filled('<pre data-src="core/sync.py"></pre>', root).pre, /import db\n\ndef sync[\s\S]*# end<\/code>/);
+});
+
+test('a rebuild of a filled page changes nothing', () => {
+  const root = repo();
+  const opts = { componentsDir: join(fixtureDir(), 'components'), root };
+  const once = build(bare('<pre data-src="core/sync.py" data-lines="3-4"></pre>'), opts);
+  assert.equal(build(once, opts), once);
+});
+
+test('data-src refuses a path outside the root and leaves the block alone', () => {
+  const root = repo();
+  for (const src of ['../outside.py', '/etc/hosts', 'core/../../outside.py']) {
+    const r = filled(`<pre data-src="${src}"></pre>`, root);
+    assert.equal(r.pre, `<pre data-src="${src}"></pre>`);
+    assert.match(r.problems[0], /outside --root/, src);
+    assert.deepEqual(r.embedded, []);
+  }
+});
+
+test('data-src refuses a secrets file and a slice that holds a secret-shaped string', () => {
+  const root = repo();
+  assert.match(filled('<pre data-src=".env"></pre>', root).problems[0], /secrets file/);
+  const r = filled('<pre data-src="core/keys.py"></pre>', root);
+  assert.match(r.problems[0], /holds a secret/);
+  assert.doesNotMatch(r.out, /51HxQwErTyUiOpAsDfGhJkLz/);
+});
+
+test('data-src reports a missing file and a range past the end of the file', () => {
+  const root = repo();
+  assert.match(filled('<pre data-src="core/nope.py"></pre>', root).problems[0], /data-src="core\/nope\.py": no such file/);
+  assert.match(filled('<pre data-src="core/sync.py" data-lines="4-9"></pre>', root).problems[0], /has 5 lines/);
+  assert.match(filled('<pre data-src="core/sync.py" data-lines="x"></pre>', root).problems[0], /data-lines="x" should look like 10-24/);
+});
+
+test('cli takes --root and lists the files whose code the page now holds', () => {
+  const root = repo();
+  const dir = mkdtempSync(join(tmpdir(), 'fill-cli-'));
+  writeFileSync(join(dir, 'p.src.html'), bare('<pre data-src="core/sync.py" data-lines="3-4"></pre>'));
+  const out = execFileSync('node', [BUILD, join(dir, 'p.src.html'), '--root', root], { stdio: 'pipe' }).toString();
+  assert.match(out, /code from: core\/sync\.py:3-4/);
+  assert.match(readFileSync(join(dir, 'p.html'), 'utf8'), /def sync\(a: list\[int\]\) -&gt; bool:/);
+});
+
+test('a page with data-src gets the code component, which draws the file label', () => {
+  const out = build(bare('<pre data-src="core/sync.py" data-lines="3-4"></pre>'), { root: repo() });
+  assert.match(out, /data-component="code"/);
+  assert.match(out, /pre\[data-src\]\[data-lines\]::before/);
+});

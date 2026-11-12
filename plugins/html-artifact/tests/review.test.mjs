@@ -154,7 +154,8 @@ test('the tray counts open comments and the drawer shows the export', async () =
 test('on a phone the review pill stays off the first screen until the reader scrolls', async () => {
   const fx2 = fixture(doc(Array(30).fill('<p>Filler paragraph long enough to make the phone page scroll a fair way down.</p>').join('\n')));
   const p = await browser.open(fx2.url, { width: 400 });
-  const top = await p.eval(`getComputedStyle(document.querySelector('.rv-tray')).opacity`);
+  // The pill fades out over 150 ms, so the test waits for the fade to end before it reads the opacity.
+  const top = await p.eval(`(async () => { await new Promise(r => setTimeout(r, 400)); return getComputedStyle(document.querySelector('.rv-tray')).opacity; })()`);
   const scrolled = await p.eval(`(async () => { scrollTo(0, innerHeight * 1.5); await new Promise(r => setTimeout(r, 400)); return getComputedStyle(document.querySelector('.rv-tray')).opacity; })()`);
   await p.close();
   const desk = await browser.open(fx2.url);

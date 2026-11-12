@@ -54,7 +54,8 @@
       if (was) { panel.hidden = true; return; }
       node.classList.add('open');
       const title = document.createElement('b');
-      title.textContent = node.querySelector('text')?.textContent.trim() || '';
+      // A wrapped label lives in .fo, where its first text node is the name and <small> is the sublabel.
+      title.textContent = (node.querySelector('text') || node.querySelector('.fo')?.firstChild)?.textContent.trim() || '';
       panel.replaceChildren(title, node.dataset.detail);
       panel.hidden = false;
     };

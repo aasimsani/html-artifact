@@ -1,5 +1,5 @@
 /* requires: shell */
-/* enhances: .diff, .language-*, .annotated, .findings, .risk */
+/* enhances: .diff, .language-*, .annotated, .findings, .risk, [data-src] */
 /* Code: syntax colours and diff line colours. */
 :root {
   --hl-k: #6d28d9; --hl-s: #047857; --hl-c: #6f6b60; --hl-b: #0e7490; --hl-n: #b45309; --hl-d: #be185d; --hl-t: #1e40af;
@@ -8,6 +8,10 @@
   :root:not([data-theme="light"]) { --hl-k: #c4a8f5; --hl-s: #7bd88f; --hl-c: #9a968a; --hl-b: #67c6d8; --hl-n: #f2b46b; --hl-d: #f08fc0; --hl-t: #93b4f8; }
 }
 :root[data-theme="dark"] { --hl-k: #c4a8f5; --hl-s: #7bd88f; --hl-c: #9a968a; --hl-b: #67c6d8; --hl-n: #f2b46b; --hl-d: #f08fc0; --hl-t: #93b4f8; }
+
+/* <pre data-src="path" data-lines="10-24"> is filled by the build, and it carries its source as a label. */
+pre[data-src]::before { content: attr(data-src); display: block; margin-bottom: 8px; font: 600 12px var(--mono); color: var(--ink-3); }
+pre[data-src][data-lines]::before { content: attr(data-src) ":" attr(data-lines); }
 
 /* <pre class="diff" data-file="path"><code>@@ …\n-old\n+new</code></pre> */
 pre.diff { padding: 0; }

@@ -82,3 +82,12 @@ test('scroll-spy marks the visible section link as current', async () => {
   await page.close();
   assert.equal(current, '#fixes');
 });
+
+test('a block quote reads as a quote: a rule on its left and quieter ink', async () => {
+  writeFileSync(join(dir, 'quote.html'), build(SRC.replace('</main>', '<blockquote>add send later to the composer</blockquote></main>')));
+  const p = await browser.open(pathToFileURL(join(dir, 'quote.html')).href);
+  const r = await p.eval(`(() => { const q = document.querySelector('main blockquote'), cs = getComputedStyle(q); return { rule: cs.borderLeftWidth, ink: cs.color, body: getComputedStyle(document.body).color }; })()`);
+  await p.close();
+  assert.equal(r.rule, '3px');
+  assert.notEqual(r.ink, r.body);
+});

@@ -1,0 +1,16 @@
+/* requires: shell */
+/* enhances: .mock */
+/* Mockups: real HTML in a frame, with numbered pins.
+   <figure class="mock" data-frame="browser" data-w="440" data-url="app/compose">
+     <template>…HTML with data-ref="name" on what a pin points at…</template>
+     <ol class="pins"><li data-ref="name"><b>Title.</b> One sentence.</li></ol><figcaption/></figure> */
+.mock { margin: 24px 0; }
+.mock-stage { box-sizing: content-box; width: max-content; border: 1px solid var(--rule-strong); border-radius: 8px; overflow: hidden; background: #fff; }
+.mock-stage[data-frame="phone"] { border: 10px solid var(--ink); border-radius: 30px; }
+.mock-stage[data-frame="terminal"] { background: #16161a; border-color: #33333a; }
+.mock-bar { display: flex; align-items: center; min-height: 16px; padding: 8px 12px; font: 12px var(--mono); color: var(--ink-3); background: var(--bg-sunken); border-bottom: 1px solid var(--rule); }
+.mock-bar::before { content: ""; flex: none; width: 10px; height: 10px; margin-right: 44px; border-radius: 50%; background: var(--ink-4); box-shadow: 16px 0 var(--ink-4), 32px 0 var(--ink-4); }
+.mock-stage[data-frame="terminal"] .mock-bar { color: #b9b9c0; background: #26262c; border-bottom-color: #33333a; }
+main .mock .pins { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: pin; }
+main .mock .pins li { position: relative; margin: 6px 0; padding-left: 28px; font-size: 14px; counter-increment: pin; }
+.mock .pins li::before { content: counter(pin); position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; font: 700 12px/20px var(--sans); text-align: center; color: var(--bg); background: var(--accent); }

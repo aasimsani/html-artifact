@@ -9,6 +9,7 @@ import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { launch } from './cdp.mjs';
+import { SECRETS } from './lint.mjs';
 
 const BG = `(() => { const b = getComputedStyle(document.body).backgroundColor;
   return b === 'rgba(0, 0, 0, 0)' ? getComputedStyle(document.documentElement).backgroundColor : b; })()`;
@@ -49,9 +50,6 @@ const PROBE_COUNT = `[...document.querySelectorAll('body *')].filter(e => {
   return (pos === 'fixed' || pos === 'absolute') && e.checkVisibility() && !e.dataset.verifySeen;
 }).length`;
 
-// Credential shapes, adapted from the f-labs research-reports gate. Typed placeholders such as
-// <REDACTED:API_KEY> and env-var references ($API_TOKEN) don't match.
-const SECRETS = /AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{20,}|xox[abprs]-[A-Za-z0-9-]{10,}|sk_(?:live|test)_[A-Za-z0-9]{16,}|sk-[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY|eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}|[?&](?:api_key|access_token|token|sig|X-Amz-Signature)=[^&\s"'<]{8,}|:\/\/[^/\s:@"'<]+:[^@\s"'<$]{3,}@/g;
 
 // Scan the authored content only. Inlined component code is ours and is skipped.
 const secrets = file => [...new Set(readFileSync(file, 'utf8')
