@@ -4,7 +4,9 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { verify } from '../skills/html-artifact/scripts/verify.mjs';
+import { launch } from '../skills/html-artifact/scripts/cdp.mjs';
 
 const VERIFY = new URL('../skills/html-artifact/scripts/verify.mjs', import.meta.url).pathname;
 const fx = name => new URL(`./fixtures/${name}.html`, import.meta.url).pathname;
@@ -68,4 +70,29 @@ test('flags diagram labels clipped by their box', () => has(results.clipped, /cl
 test('cli exits 1 on problems and 0 on a clean page', () => {
   assert.throws(() => execFileSync('node', [VERIFY, fx('bad')], { stdio: 'pipe' }), e => e.status === 1);
   execFileSync('node', [VERIFY, fx('good')], { stdio: 'pipe' });
+});
+
+test('a screenshot can be cropped to elements, padded, scaled up, and written as WebP', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'verify-shot-'));
+  const file = join(dir, 'box.html');
+  // The boxes sit below the first screen, so the test also proves the crop reaches past the viewport.
+  // They sit 40px from the left edge, because the padding stops at the edge of the page.
+  writeFileSync(file, '<!doctype html><body style="margin:0"><div style="height:1500px"></div><div id="box" class="b" style="width:200px;height:100px;margin-left:40px;background:#4338ca"></div><div class="b" style="width:200px;height:100px;margin:50px 0 0 40px;background:#166534"></div></body>');
+  const browser = await launch();
+  // The browser closes in `finally`, because a throw that left Chrome open would keep the test process alive.
+  try {
+    const p = await browser.open(pathToFileURL(file).href);
+    await p.screenshot(join(dir, 'box.png'), { selector: '#box', scale: 2 });
+    await p.screenshot(join(dir, 'box.webp'), { selector: '#box' });
+    await p.screenshot(join(dir, 'both.png'), { selector: '.b', pad: 10 });
+    await p.screenshot(join(dir, 'screen.png'), { scale: 2 });
+    await assert.rejects(p.screenshot(join(dir, 'none.png'), { selector: '#missing' }), /no element matches #missing/);
+  } finally {
+    await browser.close();
+  }
+  const size = name => { const png = readFileSync(join(dir, name)); return [png.readUInt32BE(16), png.readUInt32BE(20)]; };
+  assert.deepEqual(size('box.png'), [400, 200], 'the crop is the element size times the scale');
+  assert.deepEqual(size('both.png'), [220, 270], 'several matches are cropped as one box, with the padding around it');
+  assert.deepEqual(size('screen.png'), [2560, 1600], 'without a selector the scale applies to the viewport');
+  assert.equal(readFileSync(join(dir, 'box.webp')).subarray(8, 12).toString(), 'WEBP');
 });
